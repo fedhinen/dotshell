@@ -27,6 +27,7 @@ PanelWindow {
 
     function hide() {
         shown = false
+        hideTimer.restart()
         searchInput.text = ""
     }
 
@@ -50,14 +51,18 @@ PanelWindow {
 
     onFilteredAppsChanged: selectedIndex = 0
 
+    visible: shown || hideTimer.running
+
+    Timer {
+        id: hideTimer
+        interval: 160
+        repeat: false
+    }
+
     MouseArea {
         anchors.fill: parent
         onClicked: root.hide()
     }
-
-    opacity: shown ? 1 : 0
-    visible: opacity > 0
-    Behavior on opacity { NumberAnimation { duration: 140; easing.type: Easing.OutQuad } }
 
     Rectangle {
         id: panel
@@ -70,6 +75,9 @@ PanelWindow {
         clip: true
 
         implicitHeight: contentCol.implicitHeight + 24
+
+        opacity: shown ? 1 : 0
+        Behavior on opacity { NumberAnimation { duration: 140; easing.type: Easing.OutQuad } }
 
         scale: shown ? 1 : 0.96
         Behavior on scale { NumberAnimation { duration: 160; easing.type: Easing.OutExpo } }
