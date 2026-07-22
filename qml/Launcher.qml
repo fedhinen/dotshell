@@ -199,7 +199,7 @@ PanelWindow {
                             IconImage {
                                 anchors.fill: parent
                                 anchors.margins: 4
-                                name: appItem.modelData.icon || ""
+                                source: "image://icon/" + (appItem.modelData.icon || "")
                                 smooth: true
                             }
 
