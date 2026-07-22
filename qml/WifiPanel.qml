@@ -189,7 +189,7 @@ PanelWindow {
             anchors.margins: 10
             color: "#dadada"
             font { family: Theme.fontFamily; pixelSize: 12 }
-            echoMode: TextInput.Normal
+            echoMode: TextInput.Password
             verticalAlignment: TextInput.AlignVCenter
             onTextChanged: wifiListWindow.passwordValue = text
             Keys.onReturnPressed: submitBtn.clicked()

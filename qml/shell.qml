@@ -12,6 +12,23 @@ import Quickshell.Services.Notifications
 ShellRoot {
 
   IpcHandler {
+      target: "launcher"
+      function toggle(): void { launcherWindow.shown ? launcherWindow.hide() : launcherWindow.show() }
+      function show(): void { launcherWindow.show() }
+      function hide(): void { launcherWindow.hide() }
+  }
+
+  GlobalShortcut {
+      name: "launcher"
+      description: "Toggle app launcher"
+      onPressed: launcherWindow.shown ? launcherWindow.hide() : launcherWindow.show()
+  }
+
+  Launcher {
+      id: launcherWindow
+  }
+
+  IpcHandler {
       target: "cliphist"
       function toggle(): void { box.controlCenter = false; box.miniDashboard = false; box.cliphistOpen = !box.cliphistOpen }
       function show(): void { box.controlCenter = false; box.miniDashboard = false; box.cliphistOpen = true }
@@ -108,10 +125,10 @@ ShellRoot {
 
       property bool hovered: false
       property bool miniDashboard: false
-      property bool volumeActive: false
-      property bool brightnessActive: false
       property bool controlCenter: false
       property bool cliphistOpen: false
+      property bool volumeActive: false
+      property bool brightnessActive: false
       property bool batteryCharging: false
       property bool timerDone: false
 
@@ -200,7 +217,7 @@ ShellRoot {
       color: controlCenter && mprisModule.hasPlayer ? "#1a1a1a" : bg
 
       onMiniDashboardChanged: {
-        if (!miniDashboard) calendarPopup.shown = false; weatherPopupBox.shown = false
+        if (!miniDashboard) { calendarPopup.shown = false; weatherPopupBox.shown = false }
       }
 
       Behavior on implicitWidth { NumberAnimation { duration: 225; easing.type: Easing.OutExpo } }
@@ -216,14 +233,12 @@ ShellRoot {
 
         onClicked: (mouse) => {
 
-          // restrict control center to only accept left click
           if (box.controlCenter) {
             if (mouse.button === Qt.LeftButton)
                 box.controlCenter = false
             return
           }
 
-          // same, cliphist accept middle
           if (box.cliphistOpen) {
             if (mouse.button === Qt.MiddleButton) {
               box.cliphistOpen = false
@@ -231,7 +246,6 @@ ShellRoot {
             return
           }
 
-          // last, mini dashboard accept only left
           if (box.miniDashboard) {
             if (mouse.button === Qt.RightButton) {
               box.miniDashboard = false
@@ -240,20 +254,17 @@ ShellRoot {
           }
 
           if (mouse.button === Qt.LeftButton) {
-            console.log("Left click detected, opening control center")
             box.controlCenter = !box.controlCenter
             mediaAutoOpened = false
             mediaPopupHideTimer.stop()
           }
 
           if (mouse.button === Qt.MiddleButton) {
-            console.log("Middle click detected, opening cliphist")
             mediaAutoOpened = false
             box.cliphistOpen = !box.cliphistOpen
           }
 
           if (mouse.button === Qt.RightButton) {
-              console.log("Right click detected, opening mini dashboard")
               mediaAutoOpened = false
               box.miniDashboard = !box.miniDashboard
           }
@@ -300,7 +311,7 @@ ShellRoot {
           iconColor: volumeModule.muted ? volumeModule.mutedFg : Theme.fg
           percent: volumeModule.vol / 100
           muted: volumeModule.muted
-          barWidth: volumeModule.mutedFg ? 90 : 110
+          barWidth: volumeModule.muted ? 90 : 110
           valueText: volumeModule.muted ? "muted" : volumeModule.vol + "%"
       }
 
