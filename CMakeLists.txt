@@ -21,6 +21,11 @@ target_include_directories(IslandBackend PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/bac
 
 target_link_libraries(IslandBackend PRIVATE Qt6::Core Qt6::DBus Qt6::Qml)
 
+set_target_properties(IslandBackendplugin PROPERTIES
+    INSTALL_RPATH "/usr/share/chillpill-shell/IslandBackend"
+    BUILD_WITH_INSTALL_RPATH TRUE
+)
+
 add_custom_command(TARGET IslandBackendplugin POST_BUILD
     COMMAND sed -i "/^prefer/d" ${CMAKE_CURRENT_BINARY_DIR}/qmldir
     COMMENT "Stripping prefer line from generated qmldir"

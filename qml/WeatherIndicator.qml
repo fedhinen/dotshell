@@ -7,7 +7,7 @@ Item {
   implicitWidth: row.implicitWidth
   implicitHeight: row.implicitHeight
 
-  property string weatherFg: "#aaaaaa"
+  property color weatherFg: Theme.textSecondary
 
   Row {
     id: row
@@ -17,7 +17,7 @@ Item {
     Text {
       text: WeatherModule.iconGlyph
       color: weatherFg
-      font { family: Config.nerdFontFamily; pixelSize: 12 }
+      font { family: Theme.nerdFontFamily; pixelSize: 12 }
       anchors.verticalCenter: parent.verticalCenter
     }
     Text {

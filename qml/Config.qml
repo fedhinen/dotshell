@@ -25,7 +25,6 @@ Singleton {
       property int notificationDisplayTime: 3000
       property int maxNotificationsInStack: 20
       property int bandwidthRefreshInterval: 300000
-      property string screenLockAppCommand: "hyprlock"
       property int osdDuration: 800
       property string weatherUnits: "metric"
       property string weatherLocation: "Delhi"
@@ -46,7 +45,6 @@ Singleton {
   readonly property alias notificationDisplayTime: adapter.notificationDisplayTime
   readonly property alias maxNotificationsInStack: adapter.maxNotificationsInStack
   readonly property alias bandwidthRefreshInterval: adapter.bandwidthRefreshInterval
-  readonly property alias screenLockAppCommand: adapter.screenLockAppCommand
   readonly property alias osdDuration: adapter.osdDuration
   readonly property alias weatherUnits: adapter.weatherUnits
   readonly property alias weatherLocation: adapter.weatherLocation

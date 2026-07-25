@@ -11,7 +11,6 @@
   "notificationDisplayTime": 3000,
   "maxNotificationsInStack": 20,
   "bandwidthRefreshInterval": 300000,
-  "screenLockAppCommand": "hyprlock",
   "osdDuration": 800,
   "weatherLocation": "Delhi",
   "weatherUnits": "metric",

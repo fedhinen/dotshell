@@ -12,6 +12,23 @@ import Quickshell.Services.Notifications
 ShellRoot {
 
   IpcHandler {
+      target: "launcher"
+      function toggle(): void { launcherWindow.shown ? launcherWindow.hide() : launcherWindow.show() }
+      function show(): void { launcherWindow.show() }
+      function hide(): void { launcherWindow.hide() }
+  }
+
+  GlobalShortcut {
+      name: "launcher"
+      description: "Toggle app launcher"
+      onPressed: launcherWindow.shown ? launcherWindow.hide() : launcherWindow.show()
+  }
+
+  Launcher {
+      id: launcherWindow
+  }
+
+  IpcHandler {
       target: "cliphist"
       function toggle(): void { box.controlCenter = false; box.miniDashboard = false; box.cliphistOpen = !box.cliphistOpen }
       function show(): void { box.controlCenter = false; box.miniDashboard = false; box.cliphistOpen = true }
@@ -32,13 +49,21 @@ ShellRoot {
       function hide(): void { box.miniDashboard = false }
   }
 
+  IpcHandler {
+      target: "lockscreen"
+      function toggle(): void { lockscreen.toggle() }
+      function show(): void { lockscreen.show() }
+      function hide(): void { lockscreen.hide() }
+      function lock(): void { lockscreen.lock() }
+  }
+
   property string bg: Theme.bg
   property string fg: Theme.fg
   property string fontFamily: Theme.fontFamily
   property int avatarSize: 48
   property int buttonSize: 20
-  property string buttonBg: "#353535"
-  property string buttonHoverBg: "#bababa"
+  property string buttonBg: Theme.oneBg2
+  property string buttonHoverBg: Theme.white
   property int buttonHoverSpeed: 120
   property int buttonctlRadius: 6
 
@@ -52,6 +77,7 @@ ShellRoot {
   property int osdSpeed: 60 // how fast bar fill/unfill
   property int osdWidth: 220
   property int osdHeight: 40
+  property int controlCenterAutoHideDuration: 2500
 
   readonly property int notifMaxHeight: 97
 
@@ -108,19 +134,19 @@ ShellRoot {
 
       property bool hovered: false
       property bool miniDashboard: false
-      property bool volumeActive: false
-      property bool brightnessActive: false
       property bool controlCenter: false
       property bool cliphistOpen: false
+      property bool volumeActive: false
+      property bool brightnessActive: false
       property bool batteryCharging: false
       property bool timerDone: false
 
       property var battery: UPower.displayDevice
       property bool charging: battery.state === UPowerDeviceState.Charging
 
-      readonly property string batteryIconColor: box.charging || box.batteryLevel > 30 ? "#4bd25c"
-         : box.batteryLevel <= 15 ? "#e22323"
-         : "#eecc47"
+      readonly property color batteryIconColor: box.charging || box.batteryLevel > 30 ? Theme.success
+         : box.batteryLevel <= 15 ? Theme.dangerBright
+         : Theme.warning
 
       readonly property int batteryLevel: Math.round(battery.percentage * 100)
 
@@ -141,21 +167,31 @@ ShellRoot {
 
       // control center UI
       property real ccButtonBorderWidth: 1
-      property string ccButtonBorderColor: "#202020"
+      property string ccButtonBorderColor: Theme.oneBg3
       property int ccButtonWidth: 112
       property int ccButtonHeight: 35
       property int ccButtonRadius: 10
-      property string ccButtonBgOff: "#151515"
-      property string ccButtonFgOff: "#a4a4a4"
+      property string ccButtonBgOff: Theme.oneBg
+      property string ccButtonFgOff: Theme.lightGrey
       property int sliderHeight: 4
       property int sliderRadius: 4
-      property string sliderColor: "#c9c9c9"
+      property string sliderColor: Theme.white
       property int mprisControlsIconSize: 20
 
       Timer { id: timerDoneHideTimer; interval: 2500; onTriggered: box.timerDone = false }
       Timer { id: volumeHideTimer; interval: Config.osdDuration; onTriggered: box.volumeActive = false }
       Timer { id: brightnessHideTimer; interval: Config.osdDuration; onTriggered: box.brightnessActive = false }
       Timer { id: batteryStatusHideTimer; interval: Config.osdDuration; onTriggered: box.batteryCharging = false }
+      Timer {
+        id: controlCenterHideTimer
+        interval: controlCenterAutoHideDuration
+        repeat: false
+        onTriggered: {
+          if (box.controlCenter && !box.hovered && !mediaAutoOpened) {
+            box.controlCenter = false
+          }
+        }
+      }
       Timer { id: brightnessThrottle; interval: 80; repeat: false }
 
       Process { id: brightnessSetProc; running: false }
@@ -165,6 +201,26 @@ ShellRoot {
           heightAnim.to = implicitHeight
           heightAnim.duration = mediaAutoOpened ? 650 : 550
           heightAnim.start()
+      }
+
+      onHoveredChanged: {
+        if (hovered) {
+          controlCenterHideTimer.stop()
+          return
+        }
+
+        if (controlCenter && !mediaAutoOpened) {
+          controlCenterHideTimer.restart()
+        }
+      }
+
+      onControlCenterChanged: {
+        if (!controlCenter || mediaAutoOpened || hovered) {
+          controlCenterHideTimer.stop()
+          return
+        }
+
+        controlCenterHideTimer.restart()
       }
 
       readonly property int notifBump: notificationModule.notifications.length > 0
@@ -197,10 +253,10 @@ ShellRoot {
                   : row.implicitHeight + (hovered ? 10 : 10)
 
       radius: notificationModule.active ? 99 : cliphistOpen ? 25 : controlCenter && mprisModule.hasPlayer ? 23 : controlCenter && (notificationModule.notifications.length > 0) ? 25 : 20
-      color: controlCenter && mprisModule.hasPlayer ? "#1a1a1a" : bg
+      color: controlCenter && mprisModule.hasPlayer ? Theme.black : bg
 
       onMiniDashboardChanged: {
-        if (!miniDashboard) calendarPopup.shown = false; weatherPopupBox.shown = false
+        if (!miniDashboard) { calendarPopup.shown = false; weatherPopupBox.shown = false }
       }
 
       Behavior on implicitWidth { NumberAnimation { duration: 225; easing.type: Easing.OutExpo } }
@@ -216,14 +272,12 @@ ShellRoot {
 
         onClicked: (mouse) => {
 
-          // restrict control center to only accept left click
           if (box.controlCenter) {
             if (mouse.button === Qt.LeftButton)
                 box.controlCenter = false
             return
           }
 
-          // same, cliphist accept middle
           if (box.cliphistOpen) {
             if (mouse.button === Qt.MiddleButton) {
               box.cliphistOpen = false
@@ -231,7 +285,6 @@ ShellRoot {
             return
           }
 
-          // last, mini dashboard accept only left
           if (box.miniDashboard) {
             if (mouse.button === Qt.RightButton) {
               box.miniDashboard = false
@@ -240,20 +293,17 @@ ShellRoot {
           }
 
           if (mouse.button === Qt.LeftButton) {
-            console.log("Left click detected, opening control center")
             box.controlCenter = !box.controlCenter
             mediaAutoOpened = false
             mediaPopupHideTimer.stop()
           }
 
           if (mouse.button === Qt.MiddleButton) {
-            console.log("Middle click detected, opening cliphist")
             mediaAutoOpened = false
             box.cliphistOpen = !box.cliphistOpen
           }
 
           if (mouse.button === Qt.RightButton) {
-              console.log("Right click detected, opening mini dashboard")
               mediaAutoOpened = false
               box.miniDashboard = !box.miniDashboard
           }
@@ -300,7 +350,7 @@ ShellRoot {
           iconColor: volumeModule.muted ? volumeModule.mutedFg : Theme.fg
           percent: volumeModule.vol / 100
           muted: volumeModule.muted
-          barWidth: volumeModule.mutedFg ? 90 : 110
+          barWidth: volumeModule.muted ? 90 : 110
           valueText: volumeModule.muted ? "muted" : volumeModule.vol + "%"
       }
 
@@ -327,7 +377,7 @@ ShellRoot {
       OsdBar {
         active: box.timerDone
         icon: String.fromCodePoint(0xf1ad1)
-        iconColor: "#5892f3"
+        iconColor: Theme.info
         valueText: "Timer finished"
         barWidth: 0
         spacing: 5
@@ -382,8 +432,8 @@ ShellRoot {
           margin: box.controlCenter && mediaAutoOpened ? 5 : 14
           artistFontSize: box.controlCenter && mediaAutoOpened ? 10 : 9
           artistFontWeight: box.controlCenter && mediaAutoOpened ? 500 : 400
-          artistFontColor: box.controlCenter && mediaAutoOpened ? "#9b9b9b" : "#7b7b7b"
-          color: box.controlCenter && mediaAutoOpened ? "#1a1a1a" : "#151515"
+          artistFontColor: box.controlCenter && mediaAutoOpened ? Theme.greyFg2 : Theme.greyFg
+          color: box.controlCenter && mediaAutoOpened ? Theme.black : Theme.oneBg
           radius: box.controlCenter && mprisModule.hasPlayer ? 16 : 25
           border.width: box.controlCenter && mediaAutoOpened ? 0 : 1
         }
@@ -395,8 +445,8 @@ ShellRoot {
           buttonWidth: box.ccButtonWidth
           buttonHeight: box.ccButtonHeight
           buttonRadius: box.ccButtonRadius
-          buttonBgOff: box.controlCenter && !mprisModule.hasPlayer ? "#222222" : box.ccButtonBgOff
-          buttonFgOff: box.controlCenter && !mprisModule.hasPlayer ? "#999999" : box.ccButtonFgOff
+          buttonBgOff: box.controlCenter && !mprisModule.hasPlayer ? Theme.color0 : box.ccButtonBgOff
+          buttonFgOff: box.controlCenter && !mprisModule.hasPlayer ? Theme.greyFg2 : box.ccButtonFgOff
           controlCenterOpen: box.controlCenter
           mediaAutoOpened: mediaAutoOpened
           hasPlayer: mprisModule.hasPlayer
@@ -422,7 +472,7 @@ ShellRoot {
 
             Text {
               text: volumeModule.icon
-              color: volumeModule.muted ? "#fd2222" : Theme.fg
+              color: volumeModule.muted ? Theme.dangerBright : Theme.fg
               font.family: Theme.nerdFontFamily
               font.pixelSize: 13
               anchors.leftMargin: 10
@@ -432,7 +482,7 @@ ShellRoot {
               Layout.fillWidth: true
               height: box.sliderHeight
               radius: box.sliderRadius
-              color: "#3a3a3a"
+              color: Theme.grey
 
               Rectangle {
                 width: parent.width * (volumeModule.vol / 100)
@@ -479,7 +529,7 @@ ShellRoot {
               Layout.fillWidth: true
               height: box.sliderHeight
               radius: box.sliderRadius
-              color: "#3a3a3a"
+              color: Theme.grey
 
               Rectangle {
                 width: parent.width * brightnessModule.percent
@@ -531,7 +581,7 @@ ShellRoot {
         topRightRadius: 13
         bottomLeftRadius: 0
         bottomRightRadius: 0
-        color: "#2f2f2f"
+        color: Theme.oneBg3
         visible: notifBox.visible
         z: 0
 
@@ -541,7 +591,7 @@ ShellRoot {
 
           Text {
             text: "Notifications (" + notificationModule.notifications.length + ")"
-            color: "#dddddd"
+            color: Theme.white
             font { family: Theme.fontFamily; pixelSize: 9; weight: 400 }
             anchors.top: parent.top
             anchors.left: parent.left
@@ -554,7 +604,7 @@ ShellRoot {
             width: 60
             height: 16
             radius: 10
-            color: clearAllHover.containsMouse ? "#1d1d1d" : "#242424"
+            color: clearAllHover.containsMouse ? Theme.black : Theme.color0
             Behavior on color { ColorAnimation { duration: 100 } }
             anchors.top: parent.top
             anchors.right: parent.right
@@ -563,7 +613,7 @@ ShellRoot {
 
             Text {
               text: "Clear all"
-              color: "#dedede"
+              color: Theme.white
               font { family: Theme.fontFamily; pixelSize: 8; weight: 300 }
               anchors.centerIn: parent
             }
@@ -592,11 +642,11 @@ ShellRoot {
         topRightRadius: 0
         bottomLeftRadius: 13
         bottomRightRadius: 13
-        color: "#161616"
+        color: Theme.oneBg
         visible: notificationModule.notifications.length > 0 && box.controlCenter && !mediaAutoOpened
         clip: true
         border.width: 1
-        border.color: "#2f2f2f"
+        border.color: Theme.oneBg3
         z: 1
 
         Behavior on height { NumberAnimation { duration: 120; easing.type: Easing.OutQuad } }
@@ -632,9 +682,9 @@ ShellRoot {
             contentItem: Rectangle {
               implicitWidth: 8
               radius: 10
-              color: notifScrollBar.pressed ? "#888"
-                   : scrollHover.hovered ? "#6f6f6f"
-                   : "#3a3a3a"
+              color: notifScrollBar.pressed ? Theme.lightGrey
+                   : scrollHover.hovered ? Theme.greyFg2
+                   : Theme.grey
               Behavior on color { ColorAnimation { duration: 100 } }
               HoverHandler { id: scrollHover }
             }
@@ -711,7 +761,7 @@ ShellRoot {
 
                 Text {
                   text: modelData.receivedTime ? Qt.formatTime(modelData.receivedTime, "hh:mm") : ""
-                  color: "#858585"
+                  color: Theme.greyFg2
                   font { family: Theme.fontFamily; pixelSize: 8 }
                   Layout.bottomMargin: 5
                 }
@@ -721,12 +771,12 @@ ShellRoot {
                   Layout.preferredWidth: 22
                   Layout.preferredHeight: 22
                   radius: 99
-                  color: dismissHover.containsMouse ? "#333333" : "transparent"
+                  color: dismissHover.containsMouse ? Theme.grey : "transparent"
                   Behavior on color { ColorAnimation { duration: 100 } }
 
                   Text {
                     text: ""
-                    color: dismissHover.containsMouse ? "#bebebe" : "#404040"
+                    color: dismissHover.containsMouse ? Theme.white : Theme.greyFg
                     anchors.centerIn: parent
                     font.pixelSize: 11
                     Behavior on color { ColorAnimation { duration: 150 } }
@@ -746,7 +796,7 @@ ShellRoot {
               Text {
                 id: bodyText
                 text: modelData.body
-                color: "#9f9f9f"
+                color: Theme.greyFg2
                 font { family: Theme.fontFamily; pixelSize: 8; weight: 300 }
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
@@ -766,7 +816,7 @@ ShellRoot {
               anchors.bottom: parent.bottom
               width: parent.width
               height: 1
-              color: "#333"
+              color: Theme.grey
               visible: index < notificationModule.notifications.length - 1
             }
           }
@@ -891,7 +941,7 @@ ShellRoot {
 
               Text {
                 id: hostnameText
-                color: "#848484"
+                color: Theme.greyFg2
                 Layout.topMargin: 2
                 font { family: Theme.fontFamily; pixelSize: 9; weight: 300 }
               }
@@ -934,7 +984,7 @@ ShellRoot {
 
         // rectangle where poweroff, sleep etc. buttons placed
         Rectangle {
-          color: "#212121"
+          color: Theme.oneBg2
           implicitWidth: 15
           implicitHeight: 30
           radius: 8
@@ -969,11 +1019,9 @@ ShellRoot {
                 id: lockHover
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: { lockProc.running = false; lockProc.running = true }
+                onClicked: lockscreen.lock()
                 hoverEnabled: true
               }
-
-              Process { id: lockProc; command: ["bash", "-c", Config.screenLockAppCommand]; running: false }
             }
 
             // sleep
@@ -1001,7 +1049,7 @@ ShellRoot {
 
             Item { Layout.fillWidth: true }
 
-            Datetime { id: datetimeItem; dateFg: "#aaaaaa"; }
+            Datetime { id: datetimeItem; dateFg: Theme.lightGrey; }
 
             Item { Layout.fillWidth: true }
 
@@ -1133,6 +1181,8 @@ ShellRoot {
 
   NotificationModule { id: notificationModule; visible: false }
 
+  LockScreen { id: lockscreen }
+
   FullscreenOsd {
     id: fsNotif
     active: notificationModule.active && notifFullscreenMode
@@ -1183,7 +1233,7 @@ ShellRoot {
 
         Text {
           text: fsNotif.displayNotif ? fsNotif.displayNotif.body : ""
-          color: "#9b9b9b"
+          color: Theme.greyFg2
           font { family: Theme.fontFamily; pixelSize: 9 }
           elide: Text.ElideRight
           visible: text !== ""

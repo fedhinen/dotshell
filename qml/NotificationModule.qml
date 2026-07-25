@@ -19,7 +19,7 @@ Item {
 
   SoundEffect {
     id: notifySound
-    source: "file:///" + Quickshell.env("HOME") + "/.config/quickshell/notification.wav"
+    source: "file:///usr/share/chillpill-shell/share/notification.wav"
     volume: 1
   }
 

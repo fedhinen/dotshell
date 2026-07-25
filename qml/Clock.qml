@@ -2,16 +2,17 @@ import Quickshell
 import QtQuick
 
 Text {
+  id: root
 
-  property string fontFamily: Theme.fontFamily
+  property color accentColor: Theme.fg
+  property int fontSize: 12
 
-  text: Qt.formatDateTime(clock.date, Config.clockFormat)
-  color: Theme.fg
+  text: Qt.formatDateTime(clock.date, "ddd MMM d h:mm AP")
+  color: accentColor
 
   font {
     family: Theme.fontFamily
     weight: 500
-    pixelSize: 10
-    letterSpacing: -0.5
+    pixelSize: root.fontSize
   }
 }

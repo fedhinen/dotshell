@@ -11,7 +11,7 @@ RowLayout {
   onMutedChanged: root.volumeChanged()
 
   property string fg: Theme.fg
-  property string mutedFg: "#fb2a2a"
+  property color mutedFg: Theme.dangerBright
 
   property var sink: Pipewire.defaultAudioSink
 

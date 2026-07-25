@@ -9,17 +9,17 @@ Rectangle {
     anchors.right: parent.right
     height: mprisModule.hasPlayer ? 118 : 0
     radius: 12
-    color: "#212121"
+    color: Theme.surface
     visible: mprisModule.hasPlayer
     clip: true
-    border.color: "#202020"
+    border.color: Theme.surfaceBorder
     border.width: 2
 
     property int margin: 14
 
     // artist name adjustments
     property int artistFontSize: 9
-    property string artistFontColor: "#656565"
+    property color artistFontColor: Theme.textMuted
     property int artistFontWeight: 600
 
     property real mprisProgress: 0
@@ -63,7 +63,7 @@ Rectangle {
             Rectangle {
                 width: 47; height: 47
                 radius: 8
-                color: "#2a2a2a"
+                color: Theme.surfaceRaised
                 anchors.verticalCenter: parent.verticalCenter
                 clip: true
 
@@ -80,9 +80,9 @@ Rectangle {
                     anchors.centerIn: parent
                     visible: mprisModule.artUrl === ""
                     text: "\uf001"
-                    font.family: "FiraCode Nerd Font Propo"
+                    font.family: Theme.nerdFontFamily
                     font.pixelSize: 18
-                    color: "#555"
+                    color: Theme.textSecondary
                 }
             }
 
@@ -95,7 +95,7 @@ Rectangle {
                 Text {
                     width: parent.width
                     text: mprisModule.track !== "" ? mprisModule.track : "Nothing playing"
-                    color: "#e8e8e8"
+                    color: Theme.textPrimary
                     font.pixelSize: 12
                     font.bold: true
                     font.family: Theme.fontFamily
@@ -120,9 +120,9 @@ Rectangle {
 
                 Text {
                     text: "⏮"
-                    font.family: "FiraCode Nerd Font Propo"
+                    font.family: Theme.nerdFontFamily
                     font.pixelSize: 23
-                    color: prevHover.containsMouse ? "#ffffff" : "#cfcfcf"
+                    color: prevHover.containsMouse ? Theme.textPrimary : Theme.textSecondary
                     anchors.verticalCenter: parent.verticalCenter
                     Behavior on color { ColorAnimation { duration: 100 } }
                     MouseArea {
@@ -136,9 +136,9 @@ Rectangle {
 
                 Text {
                     text: mprisModule.playing ? "󰏤" : "󰐊"
-                    font.family: "FiraCode Nerd Font Propo"
+                    font.family: Theme.nerdFontFamily
                     font.pixelSize: 23
-                    color: playHover.containsMouse ? "#ffffff" : "#cdcdcd"
+                    color: playHover.containsMouse ? Theme.textPrimary : Theme.textSecondary
                     anchors.verticalCenter: parent.verticalCenter
                     Behavior on color { ColorAnimation { duration: 100 } }
                     MouseArea {
@@ -152,9 +152,9 @@ Rectangle {
 
                 Text {
                     text: "⏭"
-                    font.family: "FiraCode Nerd Font Propo"
+                    font.family: Theme.nerdFontFamily
                     font.pixelSize: 23
-                    color: nextHover.containsMouse ? "#ffffff" : "#b3b3b3"
+                    color: nextHover.containsMouse ? Theme.textPrimary : Theme.textSecondary
                     anchors.verticalCenter: parent.verticalCenter
                     Behavior on color { ColorAnimation { duration: 100 } }
                     MouseArea {
@@ -177,7 +177,7 @@ Rectangle {
                 width: parent.width
                 height: barHover.containsMouse ? 5 : 3
                 radius: 8
-                color: "#4d4d4d"
+                color: Theme.greyFg
 
                 Behavior on height { NumberAnimation { duration: 380; easing.type: Easing.OutExpo } }
 
@@ -185,7 +185,7 @@ Rectangle {
                     width: parent.width * mediaCard.mprisProgress
                     height: parent.height
                     radius: 5
-                    color: barHover.containsMouse ? "#cdcdcd" : fg
+                    color: barHover.containsMouse ? Theme.textPrimary : fg
                     Behavior on width { NumberAnimation { duration: 510; easing.type: Easing.Linear } }
                 }
 
@@ -212,7 +212,7 @@ Rectangle {
                 Text {
                     anchors.left: parent.left
                     text: mediaCard.mprisTimePlayed
-                    color: "#626262"
+                    color: Theme.textMuted
                     font.pixelSize: 10
                     font.family: Theme.fontFamily
                 }
@@ -220,7 +220,7 @@ Rectangle {
                 Text {
                     anchors.right: parent.right
                     text: mediaCard.mprisTimeTotal
-                    color: "#626262"
+                    color: Theme.textMuted
                     font.pixelSize: 10
                     font.family: Theme.fontFamily
                 }

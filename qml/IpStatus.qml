@@ -57,7 +57,7 @@ Item {
 
             Text {
                 text: root.vpn ? "󰦝" : "󰩟"
-                color: root.vpn ? "#64d667" : "#6496dd"
+                color: root.vpn ? Theme.success : Theme.info
                 font { family: Theme.nerdFontFamily; pixelSize: 11 }
             }
 

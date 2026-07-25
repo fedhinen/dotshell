@@ -99,8 +99,8 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: 15
-        color: "#1a1a1a"
-        border.color: "#333"
+        color: Theme.surface
+        border.color: Theme.surfaceBorder
         border.width: 1
         clip: true
     }
@@ -127,7 +127,7 @@ Item {
             property int total: 0
             text: (root.filteredEntries.length === 0 ? 0 : root.selectedIndex + 1)
                    + " / " + root.filteredEntries.length + " (" + total + ")"
-            color: "#999999"
+            color: Theme.textSecondary
             font { family: Theme.fontFamily; pixelSize: 8; weight: 300 }
             anchors.right: parent.right
             anchors.rightMargin: 6
@@ -139,8 +139,8 @@ Item {
             width: parent.width
             height: 26
             radius: 6
-            color: "#252525"
-            border.color: searchInput.activeFocus ? "#555" : "#333"
+            color: Theme.surfaceRaised
+            border.color: searchInput.activeFocus ? Theme.lightGrey : Theme.surfaceBorder
             border.width: 1
 
             TextInput {
@@ -157,7 +157,7 @@ Item {
 
                 Text {
                     text: "search clips..."
-                    color: "#666"
+                    color: Theme.textMuted
                     font: searchInput.font
                     visible: searchInput.text.length === 0
                     anchors.verticalCenter: parent.verticalCenter
@@ -201,7 +201,7 @@ Item {
                 width: listView.width
                 height: modelData.imagePath ? 50 : 28
                 radius: 7
-                color: index === root.selectedIndex ? "#313131" : "transparent"
+                color: index === root.selectedIndex ? Theme.surfaceHover : Theme.transparent
 
                 // image preview
                 Image {
