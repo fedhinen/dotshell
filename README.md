@@ -76,6 +76,7 @@ A Lightweight and Feature-Rich dynamic pill shape bar made in Quickshell especia
 - Cliphist (Clipboard History) : Search, Clipboard images preview, Item index number
 - Mini Dashboard               : Profile Image, Username, Hostname, Uptime, Battery, Basic network info, Today bandwidth usage, Datetime, Weather, Calendar, Power buttons (lock, sleep, shutdown, reboot)
 - App Launcher                 : Search installed apps in real time, keyboard navigation, icon support
+- Quickshell Lockscreen        : Word-clock session lock with PAM authentication
 - DBus Notification            : App icon (optional), summary, body (YES! you can ditch swaync/dunst fully now)
 - OSD                          : Battery, volume, brightness, timer
 
@@ -112,7 +113,6 @@ A Lightweight and Feature-Rich dynamic pill shape bar made in Quickshell especia
   "notificationDisplayTime": 3000,
   "maxNotificationsInStack": 20,
   "bandwidthRefreshInterval": 300000,
-  "screenLockAppCommand": "hyprlock",
   "osdDuration": 800,
   "weatherLocation": "Delhi",
   "weatherUnits": "metric",
@@ -186,6 +186,7 @@ hl.bind(mainMod .. " + CTRL + C",  hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpi
 hl.bind(mainMod .. " + CTRL + V",  hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call cliphist toggle"))
 hl.bind(mainMod .. " + CTRL + B",  hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call miniDashboard toggle"))
 hl.bind(mainMod .. " + SPACE",     hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call launcher toggle"))
+hl.bind(mainMod .. " + CTRL + L",  hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call lockscreen lock"))
 ```
 
 > [!TIP]

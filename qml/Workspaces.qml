@@ -16,8 +16,8 @@ RowLayout {
       required property int index
       property var ws: Hyprland.workspaces.values.find(w => w.id === index + 1)
       property bool isActive: Hyprland.focusedWorkspace?.id === (index + 1)
-      property string activeBg: "#4d5258"
-      property string inactiveBg: "#393c41"
+      property color activeBg: Theme.accent
+      property color inactiveBg: Theme.surfaceRaised
 
       width: 17.5
       height: width
@@ -30,7 +30,7 @@ RowLayout {
       Text {
         anchors.centerIn: parent
         text: wsButton.index + 1
-        color: wsButton.isActive ? "#ffffff" : "#dae0ea"
+        color: wsButton.isActive ? Theme.textPrimary : Theme.textSecondary
         font {
           family: Theme.fontFamily
           pixelSize: 9

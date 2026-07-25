@@ -71,7 +71,7 @@ PanelWindow {
         anchors.top: parent.top
         anchors.topMargin: parent.height * 0.12
         radius: 16
-        color: "#ee171717"
+        color: Theme.wibarBg
         clip: true
 
         implicitHeight: contentCol.implicitHeight + 24
@@ -99,8 +99,8 @@ PanelWindow {
                 width: parent.width
                 height: 44
                 radius: 10
-                color: "#232323"
-                border.color: searchInput.activeFocus ? "#3a3a3a" : "#272727"
+                color: Theme.surfaceRaised
+                border.color: searchInput.activeFocus ? Theme.lightGrey : Theme.surfaceBorder
                 border.width: 1
 
                 TextInput {
@@ -118,7 +118,7 @@ PanelWindow {
 
                     Text {
                         text: "Search for anything..."
-                        color: "#4a4a4a"
+                        color: Theme.textMuted
                         font: searchInput.font
                         visible: searchInput.text.length === 0
                         anchors.verticalCenter: parent.verticalCenter
@@ -168,7 +168,7 @@ PanelWindow {
                     contentItem: Rectangle {
                         implicitWidth: 4
                         radius: 2
-                        color: "#3a3a3a"
+                        color: Theme.textMuted
                     }
                 }
 
@@ -177,7 +177,7 @@ PanelWindow {
                     width: appList.width
                     height: 64
                     radius: 8
-                    color: index === root.selectedIndex ? "#2a2a2a" : "transparent"
+                    color: index === root.selectedIndex ? Theme.surfaceHover : Theme.transparent
                     Behavior on color { ColorAnimation { duration: 80 } }
 
                     required property var modelData
@@ -193,7 +193,7 @@ PanelWindow {
                             width: 40
                             height: 40
                             radius: 20
-                            color: "#1e1e1e"
+                            color: Theme.surface
                             clip: true
 
                             IconImage {
@@ -227,7 +227,7 @@ PanelWindow {
                             Text {
                                 width: parent.width
                                 text: appItem.modelData.genericName || appItem.modelData.id
-                                color: "#606060"
+                                color: Theme.textSecondary
                                 font { family: Theme.fontFamily; pixelSize: 11 }
                                 elide: Text.ElideRight
                                 visible: text.length > 0
@@ -238,7 +238,7 @@ PanelWindow {
                             text: appItem.modelData.categories.length > 0
                                 ? appItem.modelData.categories[0]
                                 : ""
-                            color: "#484848"
+                            color: Theme.textMuted
                             font { family: Theme.fontFamily; pixelSize: 11 }
                             visible: text.length > 0
                         }
@@ -259,7 +259,7 @@ PanelWindow {
             Rectangle {
                 width: parent.width
                 height: 1
-                color: "#242424"
+                color: Theme.surfaceBorder
                 visible: appList.contentHeight > 0
             }
 
@@ -269,7 +269,7 @@ PanelWindow {
 
                 Text {
                     text: "Applications"
-                    color: "#3a3a3a"
+                    color: Theme.textMuted
                     font { family: Theme.fontFamily; pixelSize: 10 }
                 }
 
@@ -282,17 +282,17 @@ PanelWindow {
                         spacing: 5
                         Text {
                             text: "Navigate"
-                            color: "#3a3a3a"
+                            color: Theme.textMuted
                             font { family: Theme.fontFamily; pixelSize: 10 }
                             anchors.verticalCenter: parent.verticalCenter
                         }
                         Rectangle {
-                            width: 18; height: 18; radius: 4; color: "#252525"
-                            Text { anchors.centerIn: parent; text: "↑"; color: "#606060"; font { family: Theme.fontFamily; pixelSize: 10 } }
+                            width: 18; height: 18; radius: 4; color: Theme.surfaceRaised
+                            Text { anchors.centerIn: parent; text: "↑"; color: Theme.textSecondary; font { family: Theme.fontFamily; pixelSize: 10 } }
                         }
                         Rectangle {
-                            width: 18; height: 18; radius: 4; color: "#252525"
-                            Text { anchors.centerIn: parent; text: "↓"; color: "#606060"; font { family: Theme.fontFamily; pixelSize: 10 } }
+                            width: 18; height: 18; radius: 4; color: Theme.surfaceRaised
+                            Text { anchors.centerIn: parent; text: "↓"; color: Theme.textSecondary; font { family: Theme.fontFamily; pixelSize: 10 } }
                         }
                     }
 
@@ -300,13 +300,13 @@ PanelWindow {
                         spacing: 5
                         Text {
                             text: "Open"
-                            color: "#3a3a3a"
+                            color: Theme.textMuted
                             font { family: Theme.fontFamily; pixelSize: 10 }
                             anchors.verticalCenter: parent.verticalCenter
                         }
                         Rectangle {
-                            width: 18; height: 18; radius: 4; color: "#252525"
-                            Text { anchors.centerIn: parent; text: "↵"; color: "#606060"; font { family: Theme.fontFamily; pixelSize: 10 } }
+                            width: 18; height: 18; radius: 4; color: Theme.surfaceRaised
+                            Text { anchors.centerIn: parent; text: "↵"; color: Theme.textSecondary; font { family: Theme.fontFamily; pixelSize: 10 } }
                         }
                     }
                 }

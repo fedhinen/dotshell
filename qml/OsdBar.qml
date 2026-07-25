@@ -40,7 +40,7 @@ Item {
         Rectangle {
             width: root.barWidth; height: root.barHeight
             radius: root.barRadius
-            color: "#333"
+            color: Theme.grey
 
             Rectangle {
                 width: parent.width * root.percent

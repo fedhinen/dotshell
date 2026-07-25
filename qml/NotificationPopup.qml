@@ -53,7 +53,7 @@ Item {
 
       Text {
         text: root.notif ? root.notif.body : ""
-        color: "#9b9b9b"
+        color: Theme.textSecondary
         font { family: Theme.fontFamily; pixelSize: 9 }
         elide: Text.ElideRight
         Layout.maximumWidth: 220

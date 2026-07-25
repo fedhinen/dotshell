@@ -14,7 +14,7 @@ Singleton {
   property string condition: ""
   property string weatherCode: ""
   property string iconGlyph: "\ue312"  // weather-cloudy
-  property string iconColor: "#9aa0a6"
+  property color iconColor: Theme.textSecondary
   property string sunrise: ""
   property string sunset: ""
   property var forecast: []
@@ -24,15 +24,15 @@ Singleton {
 
   function iconForCode(code) {
     const c = parseInt(code)
-    if (c === 113) return { glyph: "\ue30d", color: "#f4c542" }   // sunny day. yellow
-    if ([116, 119, 122].includes(c)) return { glyph: "\ue312", color: "#9aa0a6" }  // cloudy, grey
+    if (c === 113) return { glyph: "\ue30d", color: Theme.weatherSun }
+    if ([116, 119, 122].includes(c)) return { glyph: "\ue312", color: Theme.textSecondary }
     if ([176, 263, 266, 293, 296, 299, 302, 305, 308, 311, 314, 317, 320, 353, 356, 359].includes(c))
-      return { glyph: "\ue318", color: "#4a9de8" }  // rain, blue
-    if ([200, 386, 389, 392, 395].includes(c)) return { glyph: "\ue31d", color: "#e8b84a" }  // thunderstorm, amber
+      return { glyph: "\ue318", color: Theme.weatherRain }
+    if ([200, 386, 389, 392, 395].includes(c)) return { glyph: "\ue31d", color: Theme.weatherStorm }
     if ([227, 230, 323, 326, 329, 332, 335, 338, 350, 368, 371, 374, 377].includes(c))
-      return { glyph: "\ue31a", color: "#d8e8f4" }  // snow, near-white
-    if ([143, 248, 260].includes(c)) return { glyph: "\ue313", color: "#8a8a8a" }  // fog, dim grey
-    return { glyph: "\ue312", color: "#9aa0a6" }
+      return { glyph: "\ue31a", color: Theme.weatherSnow }
+    if ([143, 248, 260].includes(c)) return { glyph: "\ue313", color: Theme.weatherFog }
+    return { glyph: "\ue312", color: Theme.textSecondary }
   }
 
   function refresh() {
