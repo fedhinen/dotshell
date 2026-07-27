@@ -101,6 +101,13 @@ ShellRoot {
   property string dashboardCpu: "--%"
   property string dashboardRam: "--%"
   property string dashboardDisk: "--%"
+  property bool codexLoggedIn: false
+  property bool codexUsageLoading: false
+  property bool codexUsageStale: false
+  property int codexConsumedPercent: 0
+  property int codexRemainingPercent: 0
+  property string codexResetsAt: ""
+  property string codexUsageError: ""
 
   property bool notifFullscreenMode: false
   property bool fullscreenActive: ToplevelManager.activeToplevel && ToplevelManager.activeToplevel.fullscreen
@@ -284,7 +291,7 @@ ShellRoot {
                   : volumeActive ? osdHeight
                   : brightnessActive ? osdHeight
                   : cliphistOpen ? 270
-                  : miniDashboard ? 215
+                  : miniDashboard ? 273
                   : row.implicitHeight + (hovered ? 10 : 10)
 
       radius: powerMenu.shown ? 25 : notificationModule.active ? 99 : cliphistOpen ? 25 : controlCenter && mprisModule.hasPlayer ? 23 : controlCenter && (notificationModule.notifications.length > 0) ? 25 : 20
@@ -292,6 +299,11 @@ ShellRoot {
 
       onMiniDashboardChanged: {
         if (!miniDashboard) { calendarPopup.shown = false; weatherPopupBox.shown = false }
+        if (miniDashboard) {
+          codexUsageLoading = true
+          codexUsageProc.running = false
+          codexUsageProc.running = true
+        }
       }
 
       Behavior on implicitWidth { NumberAnimation { duration: 225; easing.type: Easing.OutExpo } }
@@ -1223,6 +1235,43 @@ ShellRoot {
             icon: "󰋊"
             accent: Theme.warning
           }
+        }
+
+        Process {
+          id: codexUsageProc
+          command: ["/usr/share/chillpill-shell/scripts/codex-usage.py"]
+          running: false
+          stdout: StdioCollector {
+            onStreamFinished: {
+              codexUsageLoading = false
+              try {
+                const data = JSON.parse(this.text.trim())
+                codexLoggedIn = data.loggedIn === true
+                codexUsageStale = data.stale === true
+                codexConsumedPercent = Number(data.consumedPercent || 0)
+                codexRemainingPercent = Number(data.remainingPercent || 0)
+                codexResetsAt = data.resetsAt || ""
+                codexUsageError = data.error || ""
+              } catch (e) {
+                codexUsageStale = true
+                codexUsageError = "Datos de Codex no disponibles"
+              }
+            }
+          }
+        }
+
+        CodexUsageCard {
+          anchors.top: parent.top
+          anchors.topMargin: 116
+          anchors.left: parent.left
+          anchors.right: parent.right
+          loggedIn: codexLoggedIn
+          loading: codexUsageLoading
+          stale: codexUsageStale
+          consumedPercent: codexConsumedPercent
+          remainingPercent: codexRemainingPercent
+          resetsAt: codexResetsAt
+          errorText: codexUsageError
         }
 
         // internet protocol information
