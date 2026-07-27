@@ -275,6 +275,7 @@ hl.bind(mainMod .. " + CTRL + V",  hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpi
 hl.bind(mainMod .. " + CTRL + B",  hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call miniDashboard toggle"))
 hl.bind(mainMod .. " + SPACE",     hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call launcher toggle"))
 hl.bind(mainMod .. " + CTRL + L",  hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call lockscreen lock"))
+hl.bind(mainMod .. " + CTRL + P",  hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call powerMenu toggle"))
 
 local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
 -- closeWindowBind:set_enabled(false)
@@ -447,4 +448,3 @@ hl.window_rule({
     size  = "90% 90%",
     center = true,
 })
-

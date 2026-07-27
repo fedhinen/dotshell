@@ -30,22 +30,22 @@ ShellRoot {
 
   IpcHandler {
       target: "cliphist"
-      function toggle(): void { box.controlCenter = false; box.miniDashboard = false; box.cliphistOpen = !box.cliphistOpen }
-      function show(): void { box.controlCenter = false; box.miniDashboard = false; box.cliphistOpen = true }
+      function toggle(): void { powerMenu.hide(); box.controlCenter = false; box.miniDashboard = false; box.cliphistOpen = !box.cliphistOpen }
+      function show(): void { powerMenu.hide(); box.controlCenter = false; box.miniDashboard = false; box.cliphistOpen = true }
       function hide(): void { box.cliphistOpen = false }
   }
 
   IpcHandler {
       target: "controlCenter"
-      function toggle(): void { box.controlCenter = !box.controlCenter; box.miniDashboard = false; box.cliphistOpen = false }
-      function show(): void { box.controlCenter = true; box.miniDashboard = false; box.cliphistOpen = false }
+      function toggle(): void { powerMenu.hide(); box.controlCenter = !box.controlCenter; box.miniDashboard = false; box.cliphistOpen = false }
+      function show(): void { powerMenu.hide(); box.controlCenter = true; box.miniDashboard = false; box.cliphistOpen = false }
       function hide(): void { box.controlCenter = false }
   }
 
   IpcHandler {
       target: "miniDashboard"
-      function toggle(): void { box.controlCenter = false; box.miniDashboard = !box.miniDashboard; box.cliphistOpen = false }
-      function show(): void { box.controlCenter = false; box.miniDashboard = true; box.cliphistOpen = false }
+      function toggle(): void { powerMenu.hide(); box.controlCenter = false; box.miniDashboard = !box.miniDashboard; box.cliphistOpen = false }
+      function show(): void { powerMenu.hide(); box.controlCenter = false; box.miniDashboard = true; box.cliphistOpen = false }
       function hide(): void { box.miniDashboard = false }
   }
 
@@ -55,6 +55,23 @@ ShellRoot {
       function show(): void { lockscreen.show() }
       function hide(): void { lockscreen.hide() }
       function lock(): void { lockscreen.lock() }
+  }
+
+  IpcHandler {
+      target: "powerMenu"
+      function toggle(): void {
+        box.controlCenter = false
+        box.miniDashboard = false
+        box.cliphistOpen = false
+        powerMenu.toggle()
+      }
+      function show(): void {
+        box.controlCenter = false
+        box.miniDashboard = false
+        box.cliphistOpen = false
+        powerMenu.show()
+      }
+      function hide(): void { powerMenu.hide() }
   }
 
   property string bg: Theme.bg
@@ -87,7 +104,8 @@ ShellRoot {
   PanelWindow {
 
     WlrLayershell.layer: WlrLayershell.Top
-    WlrLayershell.keyboardFocus: box.cliphistOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: (box.cliphistOpen || powerMenu.shown)
+      ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     implicitHeight: 482
 
     anchors {
@@ -226,7 +244,8 @@ ShellRoot {
       readonly property int notifBump: notificationModule.notifications.length > 0
         ? Math.min(notifList.contentHeight + 40, 130) : 0
 
-      implicitWidth: batteryCharging ? osdWidth
+      implicitWidth: powerMenu.shown ? 510
+                     : batteryCharging ? osdWidth
                      : box.timerDone ? osdWidth
                      : (notificationModule.active && !notifFullscreenMode) ? 280
                      : controlCenter && mediaAutoOpened ? 380
@@ -237,7 +256,8 @@ ShellRoot {
                      : miniDashboard ? 420
                      : row.implicitWidth + (hovered ? 68 : 56)
 
-      implicitHeight: batteryCharging ? osdHeight
+      implicitHeight: powerMenu.shown ? 122
+                  : batteryCharging ? osdHeight
                   : box.timerDone ? osdHeight
                   : (notificationModule.active && !notifFullscreenMode) ? 50
                   : controlCenter && mprisModule.hasPlayer && mediaAutoOpened
@@ -252,7 +272,7 @@ ShellRoot {
                   : miniDashboard ? 157
                   : row.implicitHeight + (hovered ? 10 : 10)
 
-      radius: notificationModule.active ? 99 : cliphistOpen ? 25 : controlCenter && mprisModule.hasPlayer ? 23 : controlCenter && (notificationModule.notifications.length > 0) ? 25 : 20
+      radius: powerMenu.shown ? 25 : notificationModule.active ? 99 : cliphistOpen ? 25 : controlCenter && mprisModule.hasPlayer ? 23 : controlCenter && (notificationModule.notifications.length > 0) ? 25 : 20
       color: controlCenter && mprisModule.hasPlayer ? Theme.black : bg
 
       onMiniDashboardChanged: {
@@ -278,6 +298,12 @@ ShellRoot {
             return
           }
 
+          if (powerMenu.shown) {
+            if (mouse.button === Qt.LeftButton)
+              powerMenu.hide()
+            return
+          }
+
           if (box.cliphistOpen) {
             if (mouse.button === Qt.MiddleButton) {
               box.cliphistOpen = false
@@ -293,17 +319,20 @@ ShellRoot {
           }
 
           if (mouse.button === Qt.LeftButton) {
+            powerMenu.hide()
             box.controlCenter = !box.controlCenter
             mediaAutoOpened = false
             mediaPopupHideTimer.stop()
           }
 
           if (mouse.button === Qt.MiddleButton) {
+            powerMenu.hide()
             mediaAutoOpened = false
             box.cliphistOpen = !box.cliphistOpen
           }
 
           if (mouse.button === Qt.RightButton) {
+              powerMenu.hide()
               mediaAutoOpened = false
               box.miniDashboard = !box.miniDashboard
           }
@@ -326,7 +355,7 @@ ShellRoot {
         anchors.leftMargin: 28
         anchors.rightMargin: 28
         spacing: 13
-        opacity: !box.cliphistOpen && !notificationModule.active && !box.controlCenter && !box.miniDashboard && !box.volumeActive && !box.brightnessActive && !box.batteryCharging && !box.timerDone ? 1 : 0
+        opacity: !powerMenu.shown && !box.cliphistOpen && !notificationModule.active && !box.controlCenter && !box.miniDashboard && !box.volumeActive && !box.brightnessActive && !box.batteryCharging && !box.timerDone ? 1 : 0
 
         Behavior on opacity { NumberAnimation { duration: 100 } }
 
@@ -345,7 +374,7 @@ ShellRoot {
 
       // volume
       OsdBar {
-          active: box.volumeActive && !box.controlCenter && !box.timerDone
+          active: box.volumeActive && !powerMenu.shown && !box.controlCenter && !box.timerDone
           icon: volumeModule.icon
           iconColor: volumeModule.muted ? volumeModule.mutedFg : Theme.fg
           percent: volumeModule.vol / 100
@@ -356,7 +385,7 @@ ShellRoot {
 
       // brightness
       OsdBar {
-          active: box.brightnessActive && !box.volumeActive && !box.controlCenter
+          active: box.brightnessActive && !powerMenu.shown && !box.volumeActive && !box.controlCenter
           icon: brightnessModule.icon
           percent: brightnessModule.percent
           valueText: Math.round(brightnessModule.percent * 100) + "%"
@@ -365,7 +394,7 @@ ShellRoot {
 
       // battery
       OsdBar {
-        active: box.batteryCharging && !box.volumeActive && !box.brightnessActive && !box.timerDone
+        active: box.batteryCharging && !powerMenu.shown && !box.volumeActive && !box.brightnessActive && !box.timerDone
         icon: box.batteryIcon
         iconColor: box.batteryIconColor
         valueText: box.charging ? "Charging" : "Charging stopped"
@@ -375,7 +404,7 @@ ShellRoot {
 
       // timer end
       OsdBar {
-        active: box.timerDone
+        active: box.timerDone && !powerMenu.shown
         icon: String.fromCodePoint(0xf1ad1)
         iconColor: Theme.info
         valueText: "Timer finished"
@@ -383,9 +412,24 @@ ShellRoot {
         spacing: 5
       }
 
+      // power menu
+      Item {
+        anchors.centerIn: parent
+        width: box.implicitWidth - 24
+        height: powerMenu.shown ? box.implicitHeight - 24 : 0
+        opacity: powerMenu.shown ? 1 : 0
+        visible: opacity > 0
+
+        PowerMenu {
+          id: powerMenu
+          anchors.fill: parent
+          onLockRequested: lockscreen.lock()
+        }
+      }
+
       // notification
       NotificationPopup {
-        active: notificationModule.active && !notifFullscreenMode && !box.volumeActive && !box.batteryCharging && !box.timerDone && !box.brightnessActive
+        active: notificationModule.active && !powerMenu.shown && !notifFullscreenMode && !box.volumeActive && !box.batteryCharging && !box.timerDone && !box.brightnessActive
         notif: notificationModule.current
       }
 
