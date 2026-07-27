@@ -111,6 +111,11 @@ Singleton {
 
     // Reusable controls
     property int borderRadius: 12
+    property int panelPadding: 12
+    property int contentInset: 5
+    property int cardPadding: 9
+    property int controlSpacing: 8
+    property int controlRadius: 10
     property color snapBg: color8
 
     function randomAccentColor() {

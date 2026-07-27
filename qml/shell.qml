@@ -98,6 +98,9 @@ ShellRoot {
   property string buttonHoverBg: Theme.white
   property int buttonHoverSpeed: 120
   property int buttonctlRadius: 6
+  property string dashboardCpu: "--%"
+  property string dashboardRam: "--%"
+  property string dashboardDisk: "--%"
 
   property bool notifFullscreenMode: false
   property bool fullscreenActive: ToplevelManager.activeToplevel && ToplevelManager.activeToplevel.fullscreen
@@ -173,7 +176,6 @@ ShellRoot {
       property bool volumeActive: false
       property bool brightnessActive: false
       property bool batteryCharging: false
-      property bool timerDone: false
 
       property var battery: UPower.displayDevice
       property bool charging: battery.state === UPowerDeviceState.Charging
@@ -212,7 +214,6 @@ ShellRoot {
       property string sliderColor: Theme.white
       property int mprisControlsIconSize: 20
 
-      Timer { id: timerDoneHideTimer; interval: 2500; onTriggered: box.timerDone = false }
       Timer { id: volumeHideTimer; interval: Config.osdDuration; onTriggered: box.volumeActive = false }
       Timer { id: brightnessHideTimer; interval: Config.osdDuration; onTriggered: box.brightnessActive = false }
       Timer { id: batteryStatusHideTimer; interval: Config.osdDuration; onTriggered: box.batteryCharging = false }
@@ -262,7 +263,6 @@ ShellRoot {
 
       implicitWidth: powerMenu.shown ? 510
                      : batteryCharging ? osdWidth
-                     : box.timerDone ? osdWidth
                      : (notificationModule.active && !notifFullscreenMode) ? 280
                      : controlCenter && mediaAutoOpened ? 380
                      : controlCenter ? 390
@@ -274,18 +274,17 @@ ShellRoot {
 
       implicitHeight: powerMenu.shown ? 122
                   : batteryCharging ? osdHeight
-                  : box.timerDone ? osdHeight
                   : (notificationModule.active && !notifFullscreenMode) ? 50
                   : controlCenter && mprisModule.hasPlayer && mediaAutoOpened
                       ? 124
                   : controlCenter && mprisModule.hasPlayer
-                      ? (360 + notifBump)
+                      ? ((colorTemperature.enabled ? 316 : 296) + notifBump)
                   : controlCenter
-                      ? (238 + notifBump)
+                      ? ((colorTemperature.enabled ? 194 : 174) + notifBump)
                   : volumeActive ? osdHeight
                   : brightnessActive ? osdHeight
                   : cliphistOpen ? 270
-                  : miniDashboard ? 157
+                  : miniDashboard ? 215
                   : row.implicitHeight + (hovered ? 10 : 10)
 
       radius: powerMenu.shown ? 25 : notificationModule.active ? 99 : cliphistOpen ? 25 : controlCenter && mprisModule.hasPlayer ? 23 : controlCenter && (notificationModule.notifications.length > 0) ? 25 : 20
@@ -371,7 +370,7 @@ ShellRoot {
         anchors.leftMargin: 28
         anchors.rightMargin: 28
         spacing: 13
-        opacity: !powerMenu.shown && !box.cliphistOpen && !notificationModule.active && !box.controlCenter && !box.miniDashboard && !box.volumeActive && !box.brightnessActive && !box.batteryCharging && !box.timerDone ? 1 : 0
+        opacity: !powerMenu.shown && !box.cliphistOpen && !notificationModule.active && !box.controlCenter && !box.miniDashboard && !box.volumeActive && !box.brightnessActive && !box.batteryCharging ? 1 : 0
 
         Behavior on opacity { NumberAnimation { duration: 100 } }
 
@@ -394,7 +393,7 @@ ShellRoot {
 
       // volume
       OsdBar {
-          active: box.volumeActive && !powerMenu.shown && !box.controlCenter && !box.timerDone
+          active: box.volumeActive && !powerMenu.shown && !box.controlCenter
           icon: volumeModule.icon
           iconColor: volumeModule.muted ? volumeModule.mutedFg : Theme.fg
           percent: volumeModule.vol / 100
@@ -414,7 +413,7 @@ ShellRoot {
 
       // battery
       OsdBar {
-        active: box.batteryCharging && !powerMenu.shown && !box.volumeActive && !box.brightnessActive && !box.timerDone
+        active: box.batteryCharging && !powerMenu.shown && !box.volumeActive && !box.brightnessActive
         icon: box.batteryIcon
         iconColor: box.batteryIconColor
         valueText: box.charging ? "Charging" : "Charging stopped"
@@ -422,21 +421,11 @@ ShellRoot {
         spacing: 5 // gap between battery icon and text
       }
 
-      // timer end
-      OsdBar {
-        active: box.timerDone && !powerMenu.shown
-        icon: String.fromCodePoint(0xf1ad1)
-        iconColor: Theme.info
-        valueText: "Timer finished"
-        barWidth: 0
-        spacing: 5
-      }
-
       // power menu
       Item {
         anchors.centerIn: parent
-        width: box.implicitWidth - 24
-        height: powerMenu.shown ? box.implicitHeight - 24 : 0
+        width: box.implicitWidth - (Theme.panelPadding * 2)
+        height: powerMenu.shown ? box.implicitHeight - (Theme.panelPadding * 2) : 0
         opacity: powerMenu.shown ? 1 : 0
         visible: opacity > 0
 
@@ -449,15 +438,15 @@ ShellRoot {
 
       // notification
       NotificationPopup {
-        active: notificationModule.active && !powerMenu.shown && !notifFullscreenMode && !box.volumeActive && !box.batteryCharging && !box.timerDone && !box.brightnessActive
+        active: notificationModule.active && !powerMenu.shown && !notifFullscreenMode && !box.volumeActive && !box.batteryCharging && !box.brightnessActive
         notif: notificationModule.current
       }
 
       // cliphist opens on middle click
       Item {
         anchors.centerIn: parent
-        width: box.implicitWidth - 24
-        height: box.cliphistOpen ? box.implicitHeight - 25 : 0
+        width: box.implicitWidth - (Theme.panelPadding * 2)
+        height: box.cliphistOpen ? box.implicitHeight - (Theme.panelPadding * 2) : 0
         opacity: box.cliphistOpen && !notificationModule.active && !box.volumeActive && !box.brightnessActive && !box.batteryCharging && !box.controlCenter ? 1 : 0
         visible: opacity > 0
 
@@ -479,10 +468,11 @@ ShellRoot {
       // control center opens on left click
       Item {
         anchors.centerIn: parent
-        width: box.implicitWidth - 24
-        opacity: box.controlCenter && !box.batteryCharging && !notificationModule.active && !box.timerDone ? 1 : 0
+        width: box.implicitWidth - (Theme.panelPadding * 2)
+        opacity: box.controlCenter && !box.batteryCharging && !notificationModule.active ? 1 : 0
         visible: opacity > 0
-        height: box.controlCenter && !box.batteryCharging ? box.implicitHeight - 25 : 0
+        height: box.controlCenter && !box.batteryCharging
+            ? box.implicitHeight - (Theme.panelPadding * 2) : 0
 
         Behavior on opacity {
           SequentialAnimation {
@@ -524,9 +514,9 @@ ShellRoot {
           anchors.left: parent.left
           anchors.right: parent.right
           anchors.topMargin: mprisModule.hasPlayer ? box.ccButtonHeight + 137 : 50
-          anchors.leftMargin: 15
-          anchors.rightMargin: 2
-          spacing: 5
+          anchors.leftMargin: Theme.contentInset
+          anchors.rightMargin: Theme.contentInset
+          spacing: Theme.contentInset
           visible: !mediaAutoOpened
 
           // volume
@@ -632,85 +622,51 @@ ShellRoot {
             }
           }
 
-          // color temperature section
-          Rectangle {
+          // color temperature, shown only while enabled
+          RowLayout {
             width: parent.width
-            height: 58
-            radius: 10
-            color: Theme.oneBg
-            border.width: 1
-            border.color: Theme.oneBg3
+            spacing: 14
+            visible: colorTemperature.enabled
 
             Text {
-              anchors { top: parent.top; left: parent.left; margins: 9 }
-              text: "Temperatura de color"
-              color: Theme.fg
-              font { family: Theme.fontFamily; pixelSize: 10; weight: 500 }
+              text: "\uf2c9"
+              color: Theme.warning
+              font { family: Theme.nerdFontFamily; pixelSize: 13 }
             }
 
             Rectangle {
-              anchors { top: parent.top; right: parent.right; topMargin: 7; rightMargin: 9 }
-              width: 30
-              height: 16
-              radius: 8
-              color: colorTemperature.enabled ? Theme.warning : Theme.greyFg
+              Layout.fillWidth: true
+              height: box.sliderHeight
+              radius: box.sliderRadius
+              color: Theme.grey
 
               Rectangle {
-                x: colorTemperature.enabled ? parent.width - width - 2 : 2
-                anchors.verticalCenter: parent.verticalCenter
-                width: 12
-                height: 12
-                radius: 6
-                color: Theme.white
-                Behavior on x { NumberAnimation { duration: 120 } }
+                width: parent.width * ((colorTemperature.temperature - colorTemperature.minimum)
+                    / (colorTemperature.maximum - colorTemperature.minimum))
+                height: parent.height
+                radius: box.sliderRadius
+                color: Theme.warning
               }
 
               MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: colorTemperature.toggle()
+                onClicked: (mouse) => colorTemperature.setTemperature(
+                    colorTemperature.minimum + (mouse.x / width)
+                    * (colorTemperature.maximum - colorTemperature.minimum))
+                onPositionChanged: (mouse) => {
+                  if (pressed) colorTemperature.setTemperature(
+                      colorTemperature.minimum + Math.max(0, Math.min(1, mouse.x / width))
+                      * (colorTemperature.maximum - colorTemperature.minimum))
+                }
               }
             }
 
-            RowLayout {
-              anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 9 }
-              spacing: 10
-
-              Rectangle {
-                Layout.fillWidth: true
-                height: box.sliderHeight
-                radius: box.sliderRadius
-                color: Theme.grey
-                opacity: colorTemperature.enabled ? 1 : 0.4
-
-                Rectangle {
-                  width: parent.width * ((colorTemperature.temperature - colorTemperature.minimum)
-                      / (colorTemperature.maximum - colorTemperature.minimum))
-                  height: parent.height
-                  radius: box.sliderRadius
-                  color: Theme.warning
-                }
-
-                MouseArea {
-                  anchors.fill: parent
-                  enabled: colorTemperature.enabled
-                  onClicked: (mouse) => colorTemperature.setTemperature(
-                      colorTemperature.minimum + (mouse.x / width)
-                      * (colorTemperature.maximum - colorTemperature.minimum))
-                  onPositionChanged: (mouse) => {
-                    if (pressed) colorTemperature.setTemperature(
-                        colorTemperature.minimum + Math.max(0, Math.min(1, mouse.x / width))
-                        * (colorTemperature.maximum - colorTemperature.minimum))
-                  }
-                }
-              }
-
-              Text {
-                text: colorTemperature.temperature + "K"
-                color: colorTemperature.enabled ? Theme.fg : Theme.greyFg
-                font { family: Theme.fontFamily; pixelSize: 10 }
-                Layout.minimumWidth: 42
-              }
+            Text {
+              text: colorTemperature.temperature + "K"
+              color: Theme.fg
+              font { family: Theme.fontFamily; pixelSize: 10 }
+              Layout.minimumWidth: 42
             }
           }
 
@@ -718,13 +674,13 @@ ShellRoot {
           Rectangle {
             width: parent.width
             height: 59
-            radius: 10
+            radius: Theme.controlRadius
             color: Theme.oneBg
             border.width: 1
             border.color: Theme.oneBg3
 
             Text {
-              anchors { top: parent.top; left: parent.left; margins: 9 }
+              anchors { top: parent.top; left: parent.left; margins: Theme.cardPadding }
               text: powerProfiles.daemonAvailable ? "Perfil de energía"
                   : powerProfiles.errorMessage
               color: powerProfiles.daemonAvailable ? Theme.fg : Theme.dangerBright
@@ -737,9 +693,9 @@ ShellRoot {
 
               Repeater {
                 model: [
-                  { id: "power-saver", label: "Ahorro" },
-                  { id: "balanced", label: "Normal" },
-                  { id: "performance", label: "Rendimiento" }
+                  { id: "power-saver", label: "Ahorro", icon: "\uf06c" },
+                  { id: "balanced", label: "Normal", icon: "\uf24e" },
+                  { id: "performance", label: "Rendimiento", icon: "\uf0e7" }
                 ]
 
                 Rectangle {
@@ -751,11 +707,23 @@ ShellRoot {
                   color: powerProfiles.activeProfile === modelData.id ? Theme.oneBg3 : "transparent"
                   opacity: profileSupported ? 1 : 0.35
 
-                  Text {
+                  Row {
                     anchors.centerIn: parent
-                    text: modelData.label
-                    color: powerProfiles.activeProfile === modelData.id ? Theme.white : Theme.greyFg2
-                    font { family: Theme.fontFamily; pixelSize: 9 }
+                    spacing: 5
+
+                    Text {
+                      text: modelData.icon
+                      color: powerProfiles.activeProfile === modelData.id
+                          ? Theme.warning : Theme.greyFg2
+                      font { family: Theme.nerdFontFamily; pixelSize: 9 }
+                    }
+
+                    Text {
+                      text: modelData.label
+                      color: powerProfiles.activeProfile === modelData.id
+                          ? Theme.white : Theme.greyFg2
+                      font { family: Theme.fontFamily; pixelSize: 9 }
+                    }
                   }
 
                   MouseArea {
@@ -787,8 +755,7 @@ ShellRoot {
         z: 0
 
         Item {
-          Layout.fillWidth: true
-          height: 16
+          anchors.fill: parent
 
           Text {
             text: "Notifications (" + notificationModule.notifications.length + ")"
@@ -796,7 +763,7 @@ ShellRoot {
             font { family: Theme.fontFamily; pixelSize: 9; weight: 400 }
             anchors.top: parent.top
             anchors.left: parent.left
-            anchors.leftMargin: 16
+            anchors.leftMargin: Theme.cardPadding
             anchors.topMargin: 4
             anchors.verticalCenter: parent.verticalCenter
           }
@@ -810,7 +777,7 @@ ShellRoot {
             anchors.top: parent.top
             anchors.right: parent.right
             anchors.topMargin: 3
-            anchors.rightMargin: -345
+            anchors.rightMargin: Theme.cardPadding
 
             Text {
               text: "Clear all"
@@ -1028,14 +995,13 @@ ShellRoot {
       // mini dashboard opens on right click
       Item {
         anchors.centerIn: parent
-        width: box.implicitWidth - 30
-        height: box.miniDashboard ? box.implicitHeight - 30 : 0  // don't fight the animation
+        width: box.implicitWidth - (Theme.panelPadding * 2)
+        height: box.miniDashboard ? box.implicitHeight - (Theme.panelPadding * 2) : 0  // don't fight the animation
         opacity: box.miniDashboard
                  && !notificationModule.active
                  && !box.volumeActive
                  && !box.brightnessActive
                  && !box.batteryCharging
-                 && !box.timerDone
                  && !box.cliphistOpen ? 1 : 0
 
         Behavior on opacity {
@@ -1164,13 +1130,105 @@ ShellRoot {
           anchors.top: parent.top
           anchors.right: parent.right
           anchors.topMargin: 8
-          anchors.rightMargin: 12
+          anchors.rightMargin: 0
+        }
+
+        // system resource metrics
+        Process {
+          id: cpuMetricProc
+          command: ["sh", "-c", "awk '/^cpu / {idle=$5; total=0; for(i=2;i<=NF;i++) total+=$i} END {print idle, total}' /proc/stat; sleep 0.2; awk '/^cpu / {idle=$5; total=0; for(i=2;i<=NF;i++) total+=$i} END {print idle, total}' /proc/stat"]
+          running: false
+          stdout: StdioCollector {
+            onStreamFinished: {
+              const values = this.text.trim().split(/\s+/).map(Number)
+              if (values.length === 4) {
+                const totalDelta = values[3] - values[1]
+                const idleDelta = values[2] - values[0]
+                if (totalDelta > 0)
+                  dashboardCpu = Math.round(100 * (totalDelta - idleDelta) / totalDelta) + "%"
+              }
+            }
+          }
+        }
+
+        Process {
+          id: memoryMetricProc
+          command: ["sh", "-c", "awk '/MemTotal:/ {total=$2} /MemAvailable:/ {available=$2} END {printf \"%.0f\", 100*(total-available)/total}' /proc/meminfo"]
+          running: false
+          stdout: StdioCollector {
+            onStreamFinished: {
+              const usage = this.text.trim()
+              if (usage.length > 0) dashboardRam = usage + "%"
+            }
+          }
+        }
+
+        Process {
+          id: diskMetricProc
+          command: ["df", "-P", "/"]
+          running: false
+          stdout: StdioCollector {
+            onStreamFinished: {
+              const lines = this.text.trim().split("\n")
+              if (lines.length > 1) {
+                const fields = lines[lines.length - 1].trim().split(/\s+/)
+                if (fields.length > 4) dashboardDisk = fields[4]
+              }
+            }
+          }
+        }
+
+        Timer {
+          interval: 5000
+          running: box.miniDashboard
+          repeat: true
+          triggeredOnStart: true
+          onTriggered: {
+            cpuMetricProc.running = false
+            memoryMetricProc.running = false
+            diskMetricProc.running = false
+            cpuMetricProc.running = true
+            memoryMetricProc.running = true
+            diskMetricProc.running = true
+          }
+        }
+
+        RowLayout {
+          anchors.top: parent.top
+          anchors.topMargin: 58
+          anchors.left: parent.left
+          anchors.right: parent.right
+          spacing: 8
+
+          DashboardMetric {
+            Layout.fillWidth: true
+            label: "CPU"
+            value: dashboardCpu
+            icon: ""
+            accent: Theme.info
+          }
+
+          DashboardMetric {
+            Layout.fillWidth: true
+            label: "RAM"
+            value: dashboardRam
+            icon: ""
+            accent: Theme.success
+          }
+
+          DashboardMetric {
+            Layout.fillWidth: true
+            label: "DISCO"
+            value: dashboardDisk
+            icon: "󰋊"
+            accent: Theme.warning
+          }
         }
 
         // internet protocol information
         IpStatus {
           anchors.left: parent.left
-          anchors.leftMargin: 5
+          anchors.leftMargin: 0
           anchors.bottom: parent.bottom
           anchors.bottomMargin: 42
         }
@@ -1178,75 +1236,29 @@ ShellRoot {
         // bandwidth usage status
         Bandwidth {
           anchors.right: parent.right
-          anchors.rightMargin: 4
+          anchors.rightMargin: 0
           anchors.bottom: parent.bottom
           anchors.bottomMargin: 42
         }
 
-        // rectangle where poweroff, sleep etc. buttons placed
+        // clock and weather bar
         Rectangle {
           color: Theme.oneBg2
           implicitWidth: 15
           implicitHeight: 30
-          radius: 8
+          radius: Theme.controlRadius
 
-          anchors.top: parent.top
+          anchors.bottom: parent.bottom
           anchors.left: parent.left
           anchors.right: parent.right
-          anchors.topMargin: 97
 
           RowLayout {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            anchors.leftMargin: 8
-            anchors.rightMargin: 8
-            spacing: 8
-
-            // lock
-            Rectangle {
-              width: buttonSize; height: buttonSize
-              radius: buttonctlRadius; color: buttonBg
-              Layout.alignment: Qt.AlignVCenter
-              Text {
-                anchors.centerIn: parent;
-                text: "";
-                color: lockHover.containsMouse ? buttonHoverBg : Theme.fg;
-                font.pixelSize: 8
-                Behavior on color { ColorAnimation { duration: buttonHoverSpeed } }
-              }
-
-              MouseArea {
-                id: lockHover
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: lockscreen.lock()
-                hoverEnabled: true
-              }
-            }
-
-            // sleep
-            Rectangle {
-              width: buttonSize; height: buttonSize
-              radius: buttonctlRadius; color: buttonBg
-              Layout.alignment: Qt.AlignVCenter
-              Text {
-                anchors.centerIn: parent;
-                text: "󰤄";
-                color: sleepHover.containsMouse ? buttonHoverBg : Theme.fg;
-                font.pixelSize: 9
-                Behavior on color { ColorAnimation { duration: buttonHoverSpeed } }
-              }
-
-              MouseArea {
-                id: sleepHover
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: { sleepProc.running = false; sleepProc.running = true }
-                hoverEnabled: true
-              }
-              Process { id: sleepProc; command: ["bash", "-c", "systemctl suspend"]; running: false }
-            }
+            anchors.leftMargin: Theme.cardPadding
+            anchors.rightMargin: Theme.cardPadding
+            spacing: Theme.controlSpacing
 
             Item { Layout.fillWidth: true }
 
@@ -1257,52 +1269,6 @@ ShellRoot {
             WeatherIndicator { id: weatherIndicatorItem }
 
             Item { Layout.fillWidth: true }
-
-            // reboot
-            Rectangle {
-              width: buttonSize; height: buttonSize
-              radius: buttonctlRadius; color: buttonBg
-              Layout.alignment: Qt.AlignVCenter
-              Text {
-                anchors.centerIn: parent;
-                text: "";
-                color: rebootHover.containsMouse ? buttonHoverBg : Theme.fg;
-                font.pixelSize: 9;
-                Behavior on color { ColorAnimation { duration: buttonHoverSpeed } }
-              }
-
-              MouseArea {
-                id: rebootHover
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: { rebootProc.running = false; rebootProc.running = true }
-                hoverEnabled: true
-              }
-              Process { id: rebootProc; command: ["bash", "-c", "systemctl reboot"]; running: false }
-            }
-
-            // shutdown
-            Rectangle {
-              width: buttonSize; height: buttonSize
-              radius: buttonctlRadius; color: buttonBg
-              Layout.alignment: Qt.AlignVCenter
-              Text {
-                anchors.centerIn: parent;
-                text: "󰐥";
-                color: shutdownHover.containsMouse ? buttonHoverBg : Theme.fg;
-                font.pixelSize: 12;
-                Behavior on color { ColorAnimation { duration: buttonHoverSpeed } }
-              }
-
-              MouseArea {
-                id: shutdownHover
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: { shutdownProc.running = false; shutdownProc.running = true }
-                hoverEnabled: true
-              }
-              Process { id: shutdownProc; command: ["bash", "-c", "systemctl poweroff"]; running: false }
-            }
           }
         }
       }
@@ -1358,18 +1324,9 @@ ShellRoot {
         }
     }
 
-    Connections {
-      target: countdownModule
-      function onTimerFinished() {
-        box.timerDone = true
-        timerDoneHideTimer.restart()
-      }
-    }
   }
 
   Mpris { id: mprisModule; visible: false }
-
-  CountdownModule { id: countdownModule; visible: false }
 
   NotificationServer {
     id: notifServer

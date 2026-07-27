@@ -23,8 +23,8 @@ RowLayout {
   anchors.topMargin: hasPlayer ? playerHeight + 92 : 5
   anchors.left: parent.left
   anchors.right: parent.right
-  anchors.leftMargin: 5
-  anchors.rightMargin: 5
+  anchors.leftMargin: Theme.contentInset
+  anchors.rightMargin: Theme.contentInset
 
   onControlCenterOpenChanged: {
     if (!controlCenterOpen) root.wifiPanelOpened = false
@@ -124,59 +124,43 @@ RowLayout {
 
   Item { Layout.fillWidth: true }
 
-  // timer / countdown
+  // color temperature
   Rectangle {
-    id: timerBtn
+    id: temperatureBtn
     width: root.buttonWidth
     height: root.buttonHeight
     radius: root.buttonRadius
-    color: countdownModule.running ? Theme.color0 : (timerHover.hovered ? Qt.lighter(root.buttonBgOff, 1.5) : root.buttonBgOff)
+    color: colorTemperature.enabled ? Theme.oneBg3
+        : (temperatureHover.hovered ? Qt.lighter(root.buttonBgOff, 1.5) : root.buttonBgOff)
     border.width: buttonBorderWidth
     border.color: buttonBorderColor
-    scale: timerMouse.pressed ? 0.93 : 1.0
+    scale: temperatureMouse.pressed ? 0.93 : 1.0
     Behavior on color { ColorAnimation { duration: 150 } }
     Behavior on scale { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
-    property int selectedMinutes: 1
 
     RowLayout {
       anchors.centerIn: parent
       spacing: 5
+
       Text {
-        text: {
-          if (countdownModule.running) return String.fromCodePoint(0xf1ade)
-          if (countdownModule.remainingSeconds > 0) return String.fromCodePoint(0xf1ae0)
-          return String.fromCodePoint(0xf13ab)
-        }
-        color: countdownModule.running ? Theme.color12 : root.buttonFgOff
+        text: "\uf2c9"
+        color: colorTemperature.enabled ? Theme.warning : root.buttonFgOff
         font { family: Theme.nerdFontFamily; pixelSize: 14 }
       }
+
       Text {
-        text: countdownModule.running || countdownModule.remainingSeconds > 0
-            ? countdownModule.formatted() : timerBtn.selectedMinutes + "m"
-        color: countdownModule.running ? Theme.white : root.buttonFgOff
+        text: colorTemperature.enabled ? colorTemperature.temperature + "K" : "Off"
+        color: colorTemperature.enabled ? Theme.white : root.buttonFgOff
         font { family: Theme.fontFamily; pixelSize: 12; weight: 400 }
       }
     }
 
-    HoverHandler { id: timerHover }
+    HoverHandler { id: temperatureHover }
     MouseArea {
-      id: timerMouse
+      id: temperatureMouse
       anchors.fill: parent
-      acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
       cursorShape: Qt.PointingHandCursor
-      onClicked: (mouse) => {
-        if (mouse.button === Qt.MiddleButton) { countdownModule.reset(); return }
-        if (mouse.button === Qt.RightButton) {
-          if (countdownModule.running || countdownModule.remainingSeconds > 0) return
-          const presets = Config.timerPresets
-          const idx = presets.indexOf(timerBtn.selectedMinutes)
-          timerBtn.selectedMinutes = presets[(idx + 1) % presets.length]
-          return
-        }
-        if (countdownModule.running) { countdownModule.pause(); return }
-        if (countdownModule.remainingSeconds > 0) { countdownModule.resume(); return }
-        countdownModule.start(timerBtn.selectedMinutes)
-      }
+      onClicked: colorTemperature.toggle()
     }
   }
 }

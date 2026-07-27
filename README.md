@@ -74,7 +74,7 @@ A Lightweight and Feature-Rich dynamic pill shape bar made in Quickshell especia
 - Main Pill Bar                : Battery, volume, workspaces, network, clock, right-side system tray
 - Control Center               : Media Player, Buttons (WiFi, Silent Notifications, Timer), Volume, Brightness and Color Temperature Sliders, Power Profiles, Notifications Stack
 - Cliphist (Clipboard History) : Search, Clipboard images preview, Item index number
-- Mini Dashboard               : Profile Image, Username, Hostname, Uptime, Battery, Basic network info, Today bandwidth usage, Datetime, Weather, Calendar, Power buttons (lock, sleep, shutdown, reboot)
+- Mini Dashboard               : Profile Image, Username, Hostname, Uptime, Battery, CPU, RAM, Disk, Basic network info, Today bandwidth usage, Datetime, Weather and Calendar
 - App Launcher                 : Search installed apps in real time, keyboard navigation, icon support
 - Quickshell Lockscreen        : Word-clock session lock with PAM authentication
 - Power menu                   : Full-screen lock, suspend, restart, power off and log out menu

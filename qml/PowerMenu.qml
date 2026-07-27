@@ -116,7 +116,7 @@ Item {
     Process { id: suspendProcess; command: ["systemctl", "suspend"] }
     Process { id: rebootProcess; command: ["systemctl", "reboot"] }
     Process { id: poweroffProcess; command: ["systemctl", "poweroff"] }
-    Process { id: logoutProcess; command: ["hyprctl", "dispatch", "exit"] }
+    Process { id: logoutProcess; command: ["hyprctl", "dispatch", "hl.dsp.exit()"] }
 
     FocusScope {
         id: keyboard
