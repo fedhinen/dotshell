@@ -15,6 +15,8 @@ command -v cliphist >/dev/null || die "Cliphist not installed."
 command -v nusgmon >/dev/null || die "Nusgmon not installed."
 command -v inotifywait >/dev/null || die "Inotify not installed."
 command -v brightnessctl >/dev/null || die "Brightnessctl not installed."
+command -v gammastep >/dev/null || die "Gammastep not installed."
+command -v powerprofilesctl >/dev/null || die "Power-profiles-daemon not installed."
 command -v cmake >/dev/null || die "Cmake not installed."
 
 REAL_HOME=$(getent passwd "${SUDO_USER:-$USER}" | cut -d: -f6)
@@ -37,7 +39,13 @@ cp -r share /usr/share/chillpill-shell
 
 # copy QML files
 info "Copying QML files"
-install -m 644 qml/* /usr/share/chillpill-shell
+for qml_file in qml/*.qml; do
+    [[ "$(basename "$qml_file")" == "shell.qml" ]] && continue
+    install -m 644 "$qml_file" /usr/share/chillpill-shell
+done
+# Install the entrypoint last so Quickshell never hot-reloads a partially
+# updated set of local component types.
+install -m 644 qml/shell.qml /usr/share/chillpill-shell
 
 # copy backend files
 info "Copying backend files"

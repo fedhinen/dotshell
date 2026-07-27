@@ -11,6 +11,21 @@ import Quickshell.Services.Notifications
 
 ShellRoot {
 
+  ColorTemperature {
+      id: colorTemperature
+  }
+
+  BatteryProfiles {
+      id: powerProfiles
+  }
+
+  IpcHandler {
+      target: "colorTemperature"
+      function toggle(): void { colorTemperature.toggle() }
+      function warmer(): void { colorTemperature.change(-250) }
+      function cooler(): void { colorTemperature.change(250) }
+  }
+
   IpcHandler {
       target: "launcher"
       function toggle(): void { launcherWindow.shown ? launcherWindow.hide() : launcherWindow.show() }
@@ -102,6 +117,7 @@ ShellRoot {
   property bool mediaAutoOpened: false
 
   PanelWindow {
+    id: barWindow
 
     WlrLayershell.layer: WlrLayershell.Top
     WlrLayershell.keyboardFocus: (box.cliphistOpen || powerMenu.shown)
@@ -263,9 +279,9 @@ ShellRoot {
                   : controlCenter && mprisModule.hasPlayer && mediaAutoOpened
                       ? 124
                   : controlCenter && mprisModule.hasPlayer
-                      ? (240 + notifBump)
+                      ? (360 + notifBump)
                   : controlCenter
-                      ? (118 + notifBump)
+                      ? (238 + notifBump)
                   : volumeActive ? osdHeight
                   : brightnessActive ? osdHeight
                   : cliphistOpen ? 270
@@ -370,6 +386,10 @@ ShellRoot {
         Workspaces {}
         Network {}
         Clock {}
+        SystemTray {
+          parentWindow: barWindow
+          menuAnchor: box
+        }
       }
 
       // volume
@@ -609,6 +629,143 @@ ShellRoot {
               font.family: Theme.fontFamily
               font.pixelSize: 10
               Layout.minimumWidth: 35
+            }
+          }
+
+          // color temperature section
+          Rectangle {
+            width: parent.width
+            height: 58
+            radius: 10
+            color: Theme.oneBg
+            border.width: 1
+            border.color: Theme.oneBg3
+
+            Text {
+              anchors { top: parent.top; left: parent.left; margins: 9 }
+              text: "Temperatura de color"
+              color: Theme.fg
+              font { family: Theme.fontFamily; pixelSize: 10; weight: 500 }
+            }
+
+            Rectangle {
+              anchors { top: parent.top; right: parent.right; topMargin: 7; rightMargin: 9 }
+              width: 30
+              height: 16
+              radius: 8
+              color: colorTemperature.enabled ? Theme.warning : Theme.greyFg
+
+              Rectangle {
+                x: colorTemperature.enabled ? parent.width - width - 2 : 2
+                anchors.verticalCenter: parent.verticalCenter
+                width: 12
+                height: 12
+                radius: 6
+                color: Theme.white
+                Behavior on x { NumberAnimation { duration: 120 } }
+              }
+
+              MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: colorTemperature.toggle()
+              }
+            }
+
+            RowLayout {
+              anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 9 }
+              spacing: 10
+
+              Rectangle {
+                Layout.fillWidth: true
+                height: box.sliderHeight
+                radius: box.sliderRadius
+                color: Theme.grey
+                opacity: colorTemperature.enabled ? 1 : 0.4
+
+                Rectangle {
+                  width: parent.width * ((colorTemperature.temperature - colorTemperature.minimum)
+                      / (colorTemperature.maximum - colorTemperature.minimum))
+                  height: parent.height
+                  radius: box.sliderRadius
+                  color: Theme.warning
+                }
+
+                MouseArea {
+                  anchors.fill: parent
+                  enabled: colorTemperature.enabled
+                  onClicked: (mouse) => colorTemperature.setTemperature(
+                      colorTemperature.minimum + (mouse.x / width)
+                      * (colorTemperature.maximum - colorTemperature.minimum))
+                  onPositionChanged: (mouse) => {
+                    if (pressed) colorTemperature.setTemperature(
+                        colorTemperature.minimum + Math.max(0, Math.min(1, mouse.x / width))
+                        * (colorTemperature.maximum - colorTemperature.minimum))
+                  }
+                }
+              }
+
+              Text {
+                text: colorTemperature.temperature + "K"
+                color: colorTemperature.enabled ? Theme.fg : Theme.greyFg
+                font { family: Theme.fontFamily; pixelSize: 10 }
+                Layout.minimumWidth: 42
+              }
+            }
+          }
+
+          // power profiles section
+          Rectangle {
+            width: parent.width
+            height: 59
+            radius: 10
+            color: Theme.oneBg
+            border.width: 1
+            border.color: Theme.oneBg3
+
+            Text {
+              anchors { top: parent.top; left: parent.left; margins: 9 }
+              text: powerProfiles.daemonAvailable ? "Perfil de energía"
+                  : powerProfiles.errorMessage
+              color: powerProfiles.daemonAvailable ? Theme.fg : Theme.dangerBright
+              font { family: Theme.fontFamily; pixelSize: 10; weight: 500 }
+            }
+
+            RowLayout {
+              anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 7 }
+              spacing: 5
+
+              Repeater {
+                model: [
+                  { id: "power-saver", label: "Ahorro" },
+                  { id: "balanced", label: "Normal" },
+                  { id: "performance", label: "Rendimiento" }
+                ]
+
+                Rectangle {
+                  required property var modelData
+                  readonly property bool profileSupported: powerProfiles.supported(modelData.id)
+                  Layout.fillWidth: true
+                  height: 24
+                  radius: 7
+                  color: powerProfiles.activeProfile === modelData.id ? Theme.oneBg3 : "transparent"
+                  opacity: profileSupported ? 1 : 0.35
+
+                  Text {
+                    anchors.centerIn: parent
+                    text: modelData.label
+                    color: powerProfiles.activeProfile === modelData.id ? Theme.white : Theme.greyFg2
+                    font { family: Theme.fontFamily; pixelSize: 9 }
+                  }
+
+                  MouseArea {
+                    anchors.fill: parent
+                    enabled: parent.profileSupported
+                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onClicked: powerProfiles.setProfile(modelData.id)
+                  }
+                }
+              }
             }
           }
         } 

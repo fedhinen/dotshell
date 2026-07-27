@@ -71,12 +71,13 @@ A Lightweight and Feature-Rich dynamic pill shape bar made in Quickshell especia
 
 ### Features
 
-- Main Pill Bar                : Battery, volume, workspaces, network, clock
-- Control Center               : Media Player, Buttons (WiFi, Silent Notifications, Timer), Volume and Brightness Sliders, Notifications Stack
+- Main Pill Bar                : Battery, volume, workspaces, network, clock, right-side system tray
+- Control Center               : Media Player, Buttons (WiFi, Silent Notifications, Timer), Volume, Brightness and Color Temperature Sliders, Power Profiles, Notifications Stack
 - Cliphist (Clipboard History) : Search, Clipboard images preview, Item index number
 - Mini Dashboard               : Profile Image, Username, Hostname, Uptime, Battery, Basic network info, Today bandwidth usage, Datetime, Weather, Calendar, Power buttons (lock, sleep, shutdown, reboot)
 - App Launcher                 : Search installed apps in real time, keyboard navigation, icon support
 - Quickshell Lockscreen        : Word-clock session lock with PAM authentication
+- Power menu                   : Full-screen lock, suspend, restart, power off and log out menu
 - DBus Notification            : App icon (optional), summary, body (YES! you can ditch swaync/dunst fully now)
 - OSD                          : Battery, volume, brightness, timer
 
@@ -135,6 +136,8 @@ A Lightweight and Feature-Rich dynamic pill shape bar made in Quickshell especia
 - [nusgmon](https://github.com/LUCKYS1NGHH/nusgmon) (AUR package. non-Arch users can use the setup script instead)
 - [inotify-tools](https://github.com/inotify-tools/inotify-tools)
 - [brightnessctl](https://github.com/Hummer12007/brightnessctl)
+- [gammastep](https://gitlab.com/chinstrap/gammastep) (`gammastep` on Arch)
+- [power-profiles-daemon](https://gitlab.freedesktop.org/upower/power-profiles-daemon) (`power-profiles-daemon` on Arch)
 - [wl-clipboard](https://github.com/bugaevc/wl-clipboard) (`wl-clipboard` on Arch)
 - Qt Multimedia (`qt6-multimedia` on Arch)
 - Qt5Compat (`qt6-5compat` on Arch)
@@ -144,6 +147,25 @@ A Lightweight and Feature-Rich dynamic pill shape bar made in Quickshell especia
 ---
 
 ### Install
+
+On Arch Linux, install the required repository packages first:
+
+```bash
+sudo pacman -S --needed brightnessctl cliphist cmake gammastep inotify-tools \
+  power-profiles-daemon qt6-5compat qt6-multimedia wl-clipboard
+```
+
+`quickshell`, `nusgmon`, `ttf-jetbrains-mono-nerd` and `ttf-monocraft` may
+need to be installed from the AUR, depending on the repositories enabled.
+
+Verify the available and active power profiles with:
+
+```bash
+powerprofilesctl list
+powerprofilesctl get
+```
+
+The control center disables profiles that the current hardware does not expose.
 
 > [!TIP]
 > Use my Hyprland [dotfiles](https://github.com/LUCKYS1NGHH/dotfiles), it's also made for No Dedicated GPU machines.
@@ -187,6 +209,10 @@ hl.bind(mainMod .. " + CTRL + V",  hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpi
 hl.bind(mainMod .. " + CTRL + B",  hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call miniDashboard toggle"))
 hl.bind(mainMod .. " + SPACE",     hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call launcher toggle"))
 hl.bind(mainMod .. " + CTRL + L",  hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call lockscreen lock"))
+hl.bind(mainMod .. " + CTRL + P",  hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call powerMenu toggle"))
+hl.bind(mainMod .. " + CTRL + T",  hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call colorTemperature toggle"))
+hl.bind("SHIFT + XF86MonBrightnessUp",   hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call colorTemperature cooler"), { locked = true, repeating = true })
+hl.bind("SHIFT + XF86MonBrightnessDown", hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call colorTemperature warmer"), { locked = true, repeating = true })
 ```
 
 > [!TIP]

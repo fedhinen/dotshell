@@ -198,6 +198,7 @@ Item {
                             anchors.top: parent.top
                             anchors.bottom: parent.bottom
                             width: parent.width * actionButton.holdProgress
+                            radius: actionButton.radius
                             color: actionButton.modelData.color
                             opacity: 0.26
                         }

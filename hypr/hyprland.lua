@@ -233,7 +233,7 @@ hl.config({
 hl.config({
     input = {
         kb_layout  = "us",
-        kb_variant = "",
+        kb_variant = "intl",
         kb_model   = "",
         kb_options = "",
         kb_rules   = "",
@@ -276,6 +276,7 @@ hl.bind(mainMod .. " + CTRL + B",  hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpi
 hl.bind(mainMod .. " + SPACE",     hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call launcher toggle"))
 hl.bind(mainMod .. " + CTRL + L",  hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call lockscreen lock"))
 hl.bind(mainMod .. " + CTRL + P",  hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call powerMenu toggle"))
+hl.bind(mainMod .. " + CTRL + T",  hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call colorTemperature toggle"))
 
 local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
 -- closeWindowBind:set_enabled(false)
@@ -319,6 +320,8 @@ hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_S
 hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),   { locked = true, repeating = true })
 hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"),                  { locked = true, repeating = true })
 hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"),                  { locked = true, repeating = true })
+hl.bind("SHIFT + XF86MonBrightnessUp",   hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call colorTemperature cooler"), { locked = true, repeating = true })
+hl.bind("SHIFT + XF86MonBrightnessDown", hl.dsp.exec_cmd("qs ipc -p /usr/share/chillpill-shell call colorTemperature warmer"), { locked = true, repeating = true })
 
 -- Requires playerctl
 hl.bind("XF86AudioNext",  hl.dsp.exec_cmd("playerctl next"),       { locked = true })
