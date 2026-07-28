@@ -22,6 +22,7 @@ hl.bind(mainMod .. " + SHIFT + Q", hl.dsp.window.kill())
 hl.bind(mainMod .. " + V",         hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + P",         hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J",         hl.dsp.layout("togglesplit"))
+hl.bind(mainMod .. " + F",         hl.dsp.window.fullscreen({ mode = "fullscreen" }))
 hl.bind(mainMod .. " + M", hl.dsp.exec_cmd(
     "command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"
 ))
@@ -29,7 +30,13 @@ hl.bind(mainMod .. " + M", hl.dsp.exec_cmd(
 -- Focus and workspaces.
 for _, direction in ipairs({ "left", "right", "up", "down" }) do
     hl.bind(mainMod .. " + " .. direction, hl.dsp.focus({ direction = direction }))
+    hl.bind(mainMod .. " + SHIFT + " .. direction, hl.dsp.window.move({ direction = direction }))
 end
+
+hl.bind(mainMod .. " + Tab", function()
+    hl.dispatch(hl.dsp.window.cycle_next({ floating = true }))
+    hl.dispatch(hl.dsp.window.alter_zorder({ mode = "top" }))
+end)
 
 for i = 1, 10 do
     local key = i % 10
@@ -65,3 +72,15 @@ hl.bind("Print", hl.dsp.exec_cmd(
 hl.bind("SHIFT + Print", hl.dsp.exec_cmd(
     "grim -g \"$(slurp)\" -t ppm - | satty -f - --copy-command wl-copy --output-filename ~/Pictures/Screenshots/%Y%m%d_%H%M%S.png"
 ))
+
+-- Resize mode: SUPER + CTRL + R, arrows to resize, Escape/Return to leave.
+hl.bind(mainMod .. " + CTRL + R", hl.dsp.submap("resize"))
+
+hl.define_submap("resize", function()
+    hl.bind("right", hl.dsp.window.resize({ x = 20,  y = 0,   relative = true }), { repeating = true })
+    hl.bind("left",  hl.dsp.window.resize({ x = -20, y = 0,   relative = true }), { repeating = true })
+    hl.bind("up",    hl.dsp.window.resize({ x = 0,   y = -20, relative = true }), { repeating = true })
+    hl.bind("down",  hl.dsp.window.resize({ x = 0,   y = 20,  relative = true }), { repeating = true })
+    hl.bind("escape", hl.dsp.submap("reset"))
+    hl.bind("return", hl.dsp.submap("reset"))
+end)

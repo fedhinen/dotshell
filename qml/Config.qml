@@ -15,8 +15,8 @@ Singleton {
       id: adapter
       property string displayPicture: Quickshell.env("HOME") + "/.pfp.png"
       property string clockFormat: "hh:mm"
-      property int pillTopMargin: 9
-      property int pillBottomMargin: 26
+      property int pillTopMargin: 4
+      property int pillBottomMargin: 33
       property string textFontFamily: "Monocraft"
       property string nerdFontFamily: "JetBrainsMono Nerd Font Propo"
       property list<int> timerPresets: [1, 5, 10, 15, 30]

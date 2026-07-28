@@ -18,6 +18,22 @@ hl.window_rule({
     no_focus = true,
 })
 
+-- Use the full screen when a regular workspace contains only one tiled window.
+-- Special workspaces retain their gaps and rounded corners.
+for _, selector in ipairs({ "w[tv1]s[false]", "f[1]s[false]" }) do
+    hl.workspace_rule({
+        workspace = selector,
+        gaps_out = 0,
+        gaps_in = 0,
+    })
+
+    hl.window_rule({
+        match = { float = false, workspace = selector },
+        border_size = 0,
+        rounding = 0,
+    })
+end
+
 hl.window_rule({
     name  = "move-hyprland-run",
     match = { class = "hyprland-run" },

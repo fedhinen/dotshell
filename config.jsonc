@@ -1,8 +1,8 @@
 {
   "displayPicture": "/home/xingyun/.pfp.png",
   "clockFormat": "hh:mm",
-  "pillTopMargin": 9,
-  "pillBottomMargin": 26,
+  "pillTopMargin": 4,
+  "pillBottomMargin": 33,
   "textFontFamily": "Monocraft",
   "nerdFontFamily": "JetBrainsMono Nerd Font Propo",
   "timerPresets": [1, 5, 10, 15, 30],

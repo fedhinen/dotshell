@@ -12,8 +12,13 @@ local ayu = {
 
 hl.config({
     general = {
-        gaps_in     = 6,
-        gaps_out    = 14,
+        gaps_in  = 6,
+        gaps_out = {
+            top    = 0,
+            right  = 14,
+            bottom = 14,
+            left   = 14,
+        },
         border_size = 2,
 
         col = {

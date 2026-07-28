@@ -6,13 +6,20 @@ Item {
   id: root
   property bool active: false
   property var notif: null
+  property int maxSummaryLines: 2
+  property int maxBodyLines: 6
 
   anchors.centerIn: parent
+  implicitWidth: notificationRow.implicitWidth
+  implicitHeight: notificationRow.implicitHeight
+  width: implicitWidth
+  height: implicitHeight
   opacity: active ? 1 : 0
   visible: opacity > 0
   Behavior on opacity { NumberAnimation { duration: 150 } }
 
   RowLayout {
+    id: notificationRow
     anchors.centerIn: parent
     spacing: 10
 
@@ -42,22 +49,47 @@ Item {
     }
 
     ColumnLayout {
+      Layout.preferredWidth: 220
+      Layout.maximumWidth: 220
       spacing: 2
+
       Text {
         text: root.notif ? root.notif.summary : ""
         color: Theme.fg
         font { family: Theme.fontFamily; pixelSize: 10; weight: 600 }
+        wrapMode: Text.WordWrap
         elide: Text.ElideRight
-        Layout.maximumWidth: 220
+        maximumLineCount: root.maxSummaryLines
+        Layout.fillWidth: true
       }
 
       Text {
         text: root.notif ? root.notif.body : ""
         color: Theme.textSecondary
         font { family: Theme.fontFamily; pixelSize: 9 }
+        wrapMode: Text.WordWrap
         elide: Text.ElideRight
-        Layout.maximumWidth: 220
+        maximumLineCount: root.maxBodyLines
+        Layout.fillWidth: true
         visible: text !== ""
+      }
+    }
+  }
+
+  // Chrome includes a "default" action that opens the originating page.
+  // Treating the whole popup as that action preserves native-notification
+  // behavior without adding controls to the compact pill.
+  MouseArea {
+    anchors.fill: parent
+    enabled: root.notif && root.notif.actions && root.notif.actions.length > 0
+    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+    onClicked: {
+      for (let i = 0; i < root.notif.actions.length; i++) {
+        const action = root.notif.actions[i]
+        if (action.identifier === "default") {
+          action.invoke()
+          return
+        }
       }
     }
   }

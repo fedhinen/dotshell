@@ -281,7 +281,10 @@ ShellRoot {
 
       implicitHeight: powerMenu.shown ? 122
                   : batteryCharging ? osdHeight
-                  : (notificationModule.active && !notifFullscreenMode) ? 50
+                  // The popup grows with wrapped text, but remains bounded so
+                  // a verbose notification cannot take over the pill.
+                  : (notificationModule.active && !notifFullscreenMode)
+                      ? Math.max(50, Math.min(notificationPopup.implicitHeight + 18, 132))
                   : controlCenter && mprisModule.hasPlayer && mediaAutoOpened
                       ? 124
                   : controlCenter && mprisModule.hasPlayer
@@ -450,6 +453,7 @@ ShellRoot {
 
       // notification
       NotificationPopup {
+        id: notificationPopup
         active: notificationModule.active && !powerMenu.shown && !notifFullscreenMode && !box.volumeActive && !box.batteryCharging && !box.brightnessActive
         notif: notificationModule.current
       }
@@ -1380,6 +1384,10 @@ ShellRoot {
   NotificationServer {
     id: notifServer
     keepOnReload: false
+    // Chrome requires both the `body` and `actions` capabilities before it
+    // uses the freedesktop notification service instead of creating its own
+    // Wayland notification window.
+    actionsSupported: true
     onNotification: notif => {
       notif.tracked = true
       notificationModule.enqueue(notif)
@@ -1395,11 +1403,12 @@ ShellRoot {
     active: notificationModule.active && notifFullscreenMode
     visible: notifFullscreenMode
     cardWidth: 280
-    cardHeight: 50
+    cardHeight: Math.max(50, Math.min(fsNotifContent.implicitHeight + 20, 132))
 
     property var displayNotif: null
 
     RowLayout {
+      id: fsNotifContent
       anchors.centerIn: parent
       spacing: 12
 
@@ -1427,24 +1436,30 @@ ShellRoot {
         visible: status === Image.Ready
       }
 
-      Column {
+      ColumnLayout {
+        Layout.preferredWidth: 200
+        Layout.maximumWidth: 200
         spacing: 2
 
         Text {
           text: fsNotif.displayNotif ? fsNotif.displayNotif.summary : ""
           color: Theme.fg
           font { family: Theme.fontFamily; pixelSize: 10; weight: 600 }
+          wrapMode: Text.WordWrap
           elide: Text.ElideRight
-          Layout.maximumWidth: 200
+          maximumLineCount: 2
+          Layout.fillWidth: true
         }
 
         Text {
           text: fsNotif.displayNotif ? fsNotif.displayNotif.body : ""
           color: Theme.greyFg2
           font { family: Theme.fontFamily; pixelSize: 9 }
+          wrapMode: Text.WordWrap
           elide: Text.ElideRight
+          maximumLineCount: 6
           visible: text !== ""
-          Layout.maximumWidth: 200
+          Layout.fillWidth: true
         }
       }
     }
