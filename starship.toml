@@ -2,6 +2,15 @@
 
 continuation_prompt = "[.](bright-black) "
 
+format = "$all$character"
+right_format = "${custom.codex_usage}"
+
+[custom.codex_usage]
+command = "codex-usage --format starship"
+when = "command -v codex-usage"
+format = "[$output]($style) "
+style = "bold cyan"
+
 [character]
 success_symbol = "[>](bold green)"
 error_symbol = "[x](bold red)"

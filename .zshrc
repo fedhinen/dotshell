@@ -15,5 +15,7 @@ setopt autocd extendedglob notify
 bindkey -e
 # End of lines configured by zsh-newuser-install
 
-eval "$(starship init zsh)"
+export PATH="/home/avi/.local/bin:$PATH"
+
 eval "$(sheldon source)"
+eval "$(starship init zsh)"

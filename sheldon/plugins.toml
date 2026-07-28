@@ -23,6 +23,9 @@ github = "zsh-users/zsh-autosuggestions"
 [plugins.syntaxhighlighting]
 github = "zsh-users/zsh-syntax-highlighting"
 
+[plugins.zsh-codex-usage]
+github = "fedhinen/zsh-codex-usage"
+
 # For example:
 #
 # [plugins.base16]
