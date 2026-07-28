@@ -16,3 +16,4 @@ bindkey -e
 # End of lines configured by zsh-newuser-install
 
 eval "$(starship init zsh)"
+eval "$(sheldon source)"
